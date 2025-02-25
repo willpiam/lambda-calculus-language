@@ -2,12 +2,14 @@
 //    William Doyle
 //    Febuary 24th 2025
 
-
+@numbers 0 through 8, followed by 16
 Zero := $fa.a
 #Zero
 
 One := $fa.f a
 #One
+@1 as a function
+!One
 
 Two := $fa.f (f a)
 #Two
@@ -40,6 +42,18 @@ Mult := Bluebird
 Eight := Mult Four Two
 #Eight
 
+@8 x 8 is 64
+SixtyFour := Mult Eight Eight
+#SixtyFour
+@Show 64 as a function
+!SixtyFour
+
+@8 x 1 is 8
+#Mult Eight One
+
+@1 times 1
+#Mult One One
+
 // Exponentiation (Thrush)
 Thrush := $af.f a
 Pow := Thrush
@@ -55,10 +69,61 @@ Kite := Kestrel Idiot
 True := Kestrel
 False := Kite
 
+@boolean algebra
 ?True
 ?False
 
 // now we can do boolean algebra 
+Not := $p.p False True
+?Not True
+?Not False
 
+@closures / the Vireo
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
 
+@the first of the vireo of 1 and 2 is 1
+#First (Vireo One Two)
+@the second of the vireo of 1 and 2 is 2
+#Second (Vireo One Two)
 
+// phi
+Phi := $p.Vireo (Second p) (Succ (Second p))
+@test Phi with Zero and Four should output 4 (second element should be 4+1)
+#First (Phi (Vireo Zero Four))
+#Second (Phi (Vireo Zero Four))
+
+// Predecessor combinator
+Pred := $n.n Phi (Vireo Zero Zero) True
+@test predecessor of Four should be Three
+#Pred Four
+#Pred ( Pred Four )
+#Pred (Pred (Pred Four))
+
+// Subtraction
+Sub := $nk.k Pred n
+@eight minus two is 6
+#Sub Eight Two
+
+@five minus three is two
+#Sub Five Three
+
+IsZero := $n.n ($x.False) True
+@zero is zero
+?IsZero Zero
+@one is not zero
+?IsZero One
+
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+PseudoSumRange := $fmn.IsZero (Sub n m) m (Add n (f m (Pred n)))
+SumRange := Z PseudoSumRange
+
+@Show the SumRange function
+!SumRange
+
+@sum 1 through  4 as a function
+!SumRange One Four 
+@now as a number
+#SumRange One Four

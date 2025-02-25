@@ -62,3 +62,6 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
 Compile a `.lc` file to JavaScript:
 ```bash
 deno run --allow-read --allow-write main.js <filename>.lc
+
+```
+
