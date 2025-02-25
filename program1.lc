@@ -1,0 +1,64 @@
+//    A program to play with numbers
+//    William Doyle
+//    Febuary 24th 2025
+
+
+Zero := $fa.a
+#Zero
+
+One := $fa.f a
+#One
+
+Two := $fa.f (f a)
+#Two
+
+// the successor 
+Succ := $nfa.f (n f a)
+
+Three := Succ Two
+#Three
+
+Four := Succ Three
+#Four
+
+// additon
+Add := $nk.n Succ k
+
+Five := Add Three Two
+#Five
+
+Six := Add Three Three
+#Six
+
+Seven := Succ Six
+#Seven
+
+// Multiplication (The bluebird)
+Bluebird := $fga.f (g a)
+Mult := Bluebird
+
+Eight := Mult Four Two
+#Eight
+
+// Exponentiation (Thrush)
+Thrush := $af.f a
+Pow := Thrush
+
+Sixteen := Pow Four Two
+#Sixteen
+
+// some more combinators 
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := Kestrel Idiot
+
+True := Kestrel
+False := Kite
+
+?True
+?False
+
+// now we can do boolean algebra 
+
+
+
