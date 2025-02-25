@@ -20,3 +20,15 @@ AI has finally advanced to the point where this project is worth my time. This i
 
 See `docs.md` for documentation. Grok wrote it.
 
+## Operators
+
+| Symbol        |   Description         |
+| ------------- | --------------------- |
+| :=            |                       |
+| $             |                       |
+| .             |                       |
+| ()            |                       |
+| #             | Show church numeral   |
+| @             | Show Stub Text        |
+| !             | Show function body    |
+| //            | Comments              |
