@@ -31,6 +31,12 @@ Nine := Succ Eight
 Ten := Succ Nine
 Eleven := Succ Ten
 
+Mult :=  $fga.f (g a)
+OneHundred := Mult Ten Ten 
+#OneHundred
+OneHundredOne := Succ OneHundred
+#OneHundredOne
+
 // Pairs (for predecessor)
 Vireo := $abf.f a b
 First := $p.p Kestrel
@@ -59,15 +65,44 @@ PrimeCheck := Z PseudoPrimeCheck
 IsPrime := $n.Leq n One ($x.False) ($x.PrimeCheck n Two) Idiot
 
 @tests (True means prime)
+#Zero
 ?IsPrime Zero
+
+#One
 ?IsPrime One
+
+#Two
 ?IsPrime Two
+
+#Three
 ?IsPrime Three
+
+#Four
 ?IsPrime Four
+
+#Five
 ?IsPrime Five
+
+#Six
 ?IsPrime Six
+
+#Seven
 ?IsPrime Seven
+
+#Eight
 ?IsPrime Eight
+
+#Nine
 ?IsPrime Nine
+
+#Ten
 ?IsPrime Ten
+
+#Eleven
 ?IsPrime Eleven
+
+#OneHundred
+?IsPrime OneHundred
+
+#OneHundredOne
+?IsPrime OneHundredOne

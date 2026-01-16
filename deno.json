@@ -3,6 +3,7 @@
     "dev": "deno run --watch main.ts",
     "build": "deno run --allow-write --allow-read main.js program1.lc",
     "start": "deno run output.js",
+    "lc": "deno run --allow-run --allow-read --allow-write run_lc.js",
     "test": "deno test --allow-read"
   },
   "imports": {
