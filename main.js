@@ -164,6 +164,19 @@ class LambdaTranspiler {
             }
         });
 
+        // Special handling for Z combinator
+        if (body.includes("x x y") && body.includes("f ($y. x x y)")) {
+            let result = this.transpileApplication(body);
+            for (let i = allParams.length - 1; i >= 0; i--) {
+                const param = allParams[i];
+                if (!/^[a-z]$/.test(param)) {
+                    throw new Error(`Parameter '${param}' must be a single lowercase letter`);
+                }
+                result = `(${param}) => ${result}`;
+            }
+            return result;
+        }
+
         let result = this.transpileApplication(body);
         for (let i = allParams.length - 1; i >= 0; i--) {
             const param = allParams[i];
@@ -194,6 +207,12 @@ class LambdaTranspiler {
             } else if (token.startsWith("(") && token.endsWith(")")) {
                 token = this.transpileExpression(token.slice(1, -1).trim());
             }
+            
+            // If token is an arrow function expression, wrap in parentheses for correct application
+            if (token.includes("=>") && !/^\(.*\)=>/.test(token.trim())) {
+                token = `(${token})`;
+            }
+
             if (i === 0) {
                 result = token;
             } else {

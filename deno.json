@@ -2,7 +2,8 @@
   "tasks": {
     "dev": "deno run --watch main.ts",
     "build": "deno run --allow-write --allow-read main.js program1.lc",
-    "start" : "deno run output.js"
+    "start": "deno run output.js",
+    "test": "deno test --allow-read"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"

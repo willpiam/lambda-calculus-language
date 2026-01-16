@@ -1,4 +1,4 @@
-// Compiled on April 19, 2025 from λ calculus
+// Compiled on January 16, 2026 from λ calculus
 //    A program to play with numbers
 //    William Doyle
 //    Febuary 24th 2025
@@ -92,13 +92,13 @@ console.log("%ceight minus two is 6", "color: blue");
 console.log(toNumber(Sub(Eight)(Two)));
 console.log("%cfive minus three is two", "color: blue");
 console.log(toNumber(Sub(Five)(Three)));
-const IsZero = (n) => n((x) => False)(True);
+const IsZero = (n) => n(((x) => False))(True);
 console.log("%czero is zero", "color: blue");
 console.log(toBoolean(IsZero(Zero)));
 console.log("%cone is not zero", "color: blue");
 console.log(toBoolean(IsZero(One)));
-const Z = (f) => (x) => f((y) => x(x)(y))((x) => f((y) => x(x)(y)));
-const PseudoSumRange = (f) => (m) => (n) => IsZero(Sub(n)(m))(m)(Add(n)(f(m)(Pred(n))));
+const Z = (f) => ((x) => f(((y) => x(x)(y))))(((x) => f(((y) => x(x)(y)))));
+const PseudoSumRange = (f) => (m) => (n) => IsZero(Sub(n)(m))(((x) => m))(((x) => Add(n)(f(m)(Pred(n)))))(Idiot);
 const SumRange = Z(PseudoSumRange);
 console.log("%cShow the SumRange function", "color: blue");
 console.log((SumRange).toString());

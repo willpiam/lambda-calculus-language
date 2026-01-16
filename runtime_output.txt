@@ -1,0 +1,52 @@
+numbers 0 through 8, followed by 16
+0
+1
+1 as a function
+(f) => (a) => f(a)
+2
+3
+4
+5
+6
+7
+8
+8 x 8 is 64
+64
+Show 64 as a function
+(a) => f(g(a))
+8 x 1 is 8
+8
+1 times 1
+1
+16
+boolean algebra
+True
+False
+False
+True
+closures / the Vireo
+the first of the vireo of 1 and 2 is 1
+1
+the second of the vireo of 1 and 2 is 2
+2
+test Phi with Zero and Four should output 4 (second element should be 4+1)
+4
+5
+test predecessor of Four should be Three
+3
+2
+1
+eight minus two is 6
+6
+five minus three is two
+2
+zero is zero
+True
+one is not zero
+False
+Show the SumRange function
+(m) => (n) => IsZero(Sub(n)(m))(((x) => m))(((x) => Add(n)(f(m)(Pred(n)))))(Idiot)
+sum 1 through  4 as a function
+(f) => (a) => f(n(f)(a))
+now as a number
+10

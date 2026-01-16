@@ -117,7 +117,7 @@ IsZero := $n.n ($x.False) True
 
 Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
 
-PseudoSumRange := $fmn.IsZero (Sub n m) m (Add n (f m (Pred n)))
+PseudoSumRange := $fmn.IsZero (Sub n m) ($x.m) ($x.Add n (f m (Pred n))) Idiot
 SumRange := Z PseudoSumRange
 
 @Show the SumRange function
