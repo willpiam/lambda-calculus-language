@@ -1,0 +1,6 @@
+
+// is a number prime or not? 
+
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+Prime := $n.

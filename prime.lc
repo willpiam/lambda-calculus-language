@@ -1,0 +1,73 @@
+// prime.lc
+// Determine whether a Church numeral is prime.
+// Uses recursion via the Z combinator (applicative-order fixpoint).
+
+@is a number prime or not?
+
+// Identity / booleans
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+
+True := Kestrel
+False := Kite
+
+Not := $p.p False True
+
+// Church numerals + arithmetic
+Zero := $fa.a
+One := $fa.f a
+
+Succ := $nfa.f (n f a)
+
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Eleven := Succ Ten
+
+// Pairs (for predecessor)
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+
+Sub := $nk.k Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+// Z combinator (applicative order)
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+// Mod via repeated subtraction:
+// mod(n,d) = if n < d then n else mod(n-d, d)
+PseudoMod := $fnd.Leq n (Pred d) ($x.n) ($x.f (Sub n d) d) Idiot
+Mod := Z PseudoMod
+
+// Trial division primality:
+// primeCheck(n,d) = if n <= d then True else if mod(n,d)==0 then False else primeCheck(n,d+1)
+PseudoPrimeCheck := $fnd.Leq n d ($x.True) ($x.(IsZero (Mod n d)) ($y.False) ($y.f n (Succ d)) Idiot) Idiot
+PrimeCheck := Z PseudoPrimeCheck
+
+IsPrime := $n.Leq n One ($x.False) ($x.PrimeCheck n Two) Idiot
+
+@tests (True means prime)
+?IsPrime Zero
+?IsPrime One
+?IsPrime Two
+?IsPrime Three
+?IsPrime Four
+?IsPrime Five
+?IsPrime Six
+?IsPrime Seven
+?IsPrime Eight
+?IsPrime Nine
+?IsPrime Ten
+?IsPrime Eleven
