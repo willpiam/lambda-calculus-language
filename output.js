@@ -58,7 +58,7 @@ const Mod = Z(PseudoMod);
 // primeCheck(n,d) = if n <= d then True else if mod(n,d)==0 then False else primeCheck(n,d+1)
 const PseudoPrimeCheck = (f) => (n) => (d) => Leq(n)(d)(((x) => True))(((x) => IsZero(Mod(n)(d))(((y) => False))(((y) => f(n)(Succ(d))))(Idiot)))(Idiot);
 const PrimeCheck = Z(PseudoPrimeCheck);
-const IsPrime = (n) => Leq(n)(One)(((x) => False))(((x) => PrimeCheck(n)(Two)))(Idiot);
+const IsPrime = (n) => ((i) => ((t) => ((f) => ((s) => ((z) => ((o) => ((w) => ((v) => ((u) => ((r) => ((h) => ((p) => ((b) => ((e) => ((l) => ((g) => ((m) => ((c) => l(n)(o)(((x) => f))(((x) => c(n)(w)))(i))((g((q) => (n) => (d) => l(n)(d)(((x) => t))(((x) => e(m(n)(d))(((y) => f))(((y) => q(n)(s(d))))(i)))(i)))))((g((q) => (n) => (d) => l(n)(p(d))(((x) => n))(((x) => q(b(n)(d))(d)))(i)))))(((f) => ((x) => f(((z) => x(x)(z))))(((x) => f(((z) => x(x)(z))))))))(((n) => (m) => e(b(n)(m)))))(((n) => n(((x) => f))(t))))(((n) => (k) => k(p)(n))))(((n) => n(h)(v(z)(z))(t))))(((p) => v(r(p))(s(r(p))))))(((p) => p(f))))(((p) => p(t))))(((a) => (b) => (f) => f(a)(b))))(((f) => (a) => f(f(a)))))(((f) => (a) => f(a))))(((f) => (a) => a)))(((n) => (f) => (a) => f(n(f)(a)))))(((a) => (b) => b)))(((a) => (b) => a)))(((a) => a));
 console.log("%ctests (True means prime)", "color: blue");
 console.log(toNumber(Zero));
 console.log(toBoolean(IsPrime(Zero)));

@@ -1,0 +1,108 @@
+// prime2.lc
+// Determine whether a Church numeral is prime.
+// Uses recursion via the Z combinator (applicative-order fixpoint).
+// verbose version of prime.lc
+@is a number prime or not?
+
+// Identity / booleans
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+
+True := Kestrel
+False := Kite
+
+Not := $p.p False True
+
+// Church numerals + arithmetic
+Zero := $fa.a
+One := $fa.f a
+
+Succ := $nfa.f (n f a)
+
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Eleven := Succ Ten
+
+Mult :=  $fga.f (g a)
+OneHundred := Mult Ten Ten 
+#OneHundred
+OneHundredOne := Succ OneHundred
+#OneHundredOne
+
+// Pairs (for predecessor)
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+
+Sub := $nk.k Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+// Z combinator (applicative order)
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+// Mod via repeated subtraction:
+// mod(n,d) = if n < d then n else mod(n-d, d)
+PseudoMod := $fnd.Leq n (Pred d) ($x.n) ($x.f (Sub n d) d) Idiot
+Mod := Z PseudoMod
+
+// Trial division primality:
+// primeCheck(n,d) = if n <= d then True else if mod(n,d)==0 then False else primeCheck(n,d+1)
+PseudoPrimeCheck := $fnd.Leq n d ($x.True) ($x.(IsZero (Mod n d)) ($y.False) ($y.f n (Succ d)) Idiot) Idiot
+PrimeCheck := Z PseudoPrimeCheck
+
+IsPrime := $n.($i.($t.($f.($s.($z.($o.($w.($v.($u.($r.($h.($p.($b.($e.($l.($g.($m.($c.l n o ($x.f) ($x.c n w) i) (g ($qnd.l n d ($x.t) ($x.(e (m n d)) ($y.f) ($y.q n (s d)) i) i))) (g ($qnd.l n (p d) ($x.n) ($x.q (b n d) d) i))) ($f. ($x. f ($z. x x z)) ($x. f ($z. x x z)))) ($nm.e (b n m))) ($n.n ($x.f) t)) ($nk.k p n)) ($n.n h (v z z) t)) ($p.v (r p) (s (r p)))) ($p.p f)) ($p.p t)) ($abf.f a b)) ($fa.f (f a))) ($fa.f a)) ($fa.a)) ($nfa.f (n f a))) ($ab.b)) ($ab.a)) ($a.a)
+
+@tests (True means prime)
+#Zero
+?IsPrime Zero
+
+#One
+?IsPrime One
+
+#Two
+?IsPrime Two
+
+#Three
+?IsPrime Three
+
+#Four
+?IsPrime Four
+
+#Five
+?IsPrime Five
+
+#Six
+?IsPrime Six
+
+#Seven
+?IsPrime Seven
+
+#Eight
+?IsPrime Eight
+
+#Nine
+?IsPrime Nine
+
+#Ten
+?IsPrime Ten
+
+#Eleven
+?IsPrime Eleven
+
+#OneHundred
+?IsPrime OneHundred
+
+#OneHundredOne
+?IsPrime OneHundredOne
