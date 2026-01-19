@@ -5,9 +5,8 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
 ## Overview
 
 - **File Extension**: `.lc`
-- **Purpose**: Write pure lambda calculus expressions with named combinations, evaluate Church numerals as numbers, and display boolean values as strings.
+- **Purpose**: Write lambda calculus expressions with named combinations, evaluate Church numerals as numbers, and display boolean values as strings (plus a few output directives).
 - **Compiler**: A Deno-based transpiler (`main.js`) converts `.lc` files to JavaScript, executable with `deno run`.
-- **Date**: Current version as of February 24, 2025.
 
 ## Syntax
 
@@ -41,11 +40,20 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
 - Syntax: `?<expression>`
 - Example: `?True` outputs `"True"` if `True` is defined as `$ab.a`, and `?False` outputs `"False"` if `False` is `$ab.b`.
 
+### Text Output
+- Use `@` to print a literal line of text.
+- Syntax: `@<text>`
+- Example: `@tests (True means prime)` outputs that line in blue.
+
+### Function Output
+- Use `!` to print the JavaScript function body for an expression.
+- Syntax: `!<expression>`
+- Example: `!SumRange` prints the compiled function expression.
+
 ### Comments
 - Single-line comments start with `//` and extend to the end of the line.
 - Syntax: `// <comment text>`
 - Comments are preserved in the compiled JavaScript output in their original positions.
-- Example: `// the successor` appears above its associated definition.
 
 ### Restrictions
 - Parameters in lambda abstractions (`$<params>`) must be lowercase letters.
