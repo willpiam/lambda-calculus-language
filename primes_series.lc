@@ -1,8 +1,8 @@
 // primes_series.lc
 // Compute the first N prime Church numerals and print them.
 
-// How many primes to compute (start here).
-Count := $fa.f (f (f a))
+
+
 
 // Identity / booleans
 Idiot := $a.a
@@ -22,6 +22,17 @@ Succ := $nfa.f (n f a)
 
 Two := Succ One
 Three := Succ Two
+
+Mult :=  $fga.f (g a)
+Six := Mult Two Three
+Seven := Succ Six
+FortyTwo := Mult Six Seven
+
+// How many primes to compute (start here).
+// Count := Three
+// Count := Seven
+Count := FortyTwo
+
 
 // Pairs (for predecessor)
 Vireo := $abf.f a b
@@ -90,4 +101,4 @@ Primes := BuildPrimesFrom One Count
 // Display primes using numeric list output
 // ============================================
 @first primes (generated in a loop)
-*Primes Count
+*Primes

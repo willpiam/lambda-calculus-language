@@ -1,8 +1,6 @@
 // Compiled on January 27, 2026 from λ calculus
 // primes_series.lc
 // Compute the first N prime Church numerals and print them.
-// How many primes to compute (start here).
-const Count = (f) => (a) => f(f(f(a)));
 // Identity / booleans
 const Idiot = (a) => a;
 const Kestrel = (a) => (b) => a;
@@ -16,6 +14,14 @@ const One = (f) => (a) => f(a);
 const Succ = (n) => (f) => (a) => f(n(f)(a));
 const Two = Succ(One);
 const Three = Succ(Two);
+const Mult = (f) => (g) => (a) => f(g(a));
+const Six = Mult(Two)(Three);
+const Seven = Succ(Six);
+const FortyTwo = Mult(Six)(Seven);
+// How many primes to compute (start here).
+// Count := Three
+// Count := Seven
+const Count = FortyTwo;
 // Pairs (for predecessor)
 const Vireo = (a) => (b) => (f) => f(a)(b);
 const First = (p) => p(Kestrel);
@@ -79,13 +85,19 @@ const Primes = BuildPrimesFrom(One)(Count);
       }
     
 console.log("%cfirst primes (generated in a loop)", "color: blue");
-(function(list, len) {
+(function(list) {
+  const _isNil = (l) => {
+    const testFn = (a) => (b) => ({ _cons: true, head: a, tail: b });
+    const result = l(testFn);
+    return !result._cons;
+  };
   const _first = (p) => p((a) => (b) => a);
   const _second = (p) => p((a) => (b) => b);
-  const n = toNumber(len);
+  const arr = [];
   let current = list;
-  for (let i = 0; i < n; i++) {
-    console.log(toNumber(_first(current)));
+  while (!_isNil(current)) {
+    arr.push(toNumber(_first(current)));
     current = _second(current);
   }
-})(Primes, Count);
+  console.log(arr);
+})(Primes);

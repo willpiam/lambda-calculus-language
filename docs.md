@@ -51,12 +51,12 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
 - Example: `!SumRange` prints the compiled function expression.
 
 ### Numeric List Output
-- Use `*` to print a list of Church numerals as numbers.
-- Syntax: `*<list> <count>`
+- Use `*` to print a list of Church numerals as a JavaScript array.
+- Syntax: `*<list>`
   - `<list>`: A pair-based list (built with Cons/Nil).
-  - `<count>`: A Church numeral indicating how many elements to print.
-- The operator iterates through the list, printing each element as a number.
-- Example: `*Primes Count` prints `Count` prime numbers from the `Primes` list.
+- The operator iterates through the list until Nil, converting each Church numeral to a number.
+- Output format: `[n1, n2, n3, ...]`
+- Example: `*Primes` prints the primes list as `[2, 3, 5]`.
 
 ### Comments
 - Single-line comments start with `//` and extend to the end of the line.

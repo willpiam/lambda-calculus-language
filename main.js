@@ -52,25 +52,26 @@ class LambdaTranspiler {
                 const expr = line.slice(1).trim();
                 output.push(`console.log((${this.transpileExpression(expr)}).toString());`);
             } else if (line.startsWith("*")) {
-                // Numeric list output: *<list> <count>
-                const content = line.slice(1).trim();
-                const tokens = this.tokenize(content);
-                if (tokens.length >= 2) {
-                    const listExpr = this.transpileExpression(tokens[0]);
-                    const countExpr = this.transpileExpression(tokens.slice(1).join(" "));
-                    output.push(
-`(function(list, len) {
+                // Numeric list output: *<list>
+                const listExpr = this.transpileExpression(line.slice(1).trim());
+                output.push(
+`(function(list) {
+  const _isNil = (l) => {
+    const testFn = (a) => (b) => ({ _cons: true, head: a, tail: b });
+    const result = l(testFn);
+    return !result._cons;
+  };
   const _first = (p) => p((a) => (b) => a);
   const _second = (p) => p((a) => (b) => b);
-  const n = toNumber(len);
+  const arr = [];
   let current = list;
-  for (let i = 0; i < n; i++) {
-    console.log(toNumber(_first(current)));
+  while (!_isNil(current)) {
+    arr.push(toNumber(_first(current)));
     current = _second(current);
   }
-})(${listExpr}, ${countExpr});`
-                    );
-                }
+  console.log(arr);
+})(${listExpr});`
+                );
             } else if (
                 line && !line.includes(":=") && !line.startsWith("#") &&
                 !line.startsWith("?") && !line.startsWith("@") && !line.startsWith("!") &&
