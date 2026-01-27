@@ -1,0 +1,67 @@
+// primes_series.lc
+// Compute the first N prime Church numerals and print them.
+
+// How many primes to compute (start here).
+Count := $fa.f (f (f a))
+
+// Identity / booleans
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+
+True := Kestrel
+False := Kite
+
+Not := $p.p False True
+
+// Church numerals + arithmetic
+Zero := $fa.a
+One := $fa.f a
+
+Succ := $nfa.f (n f a)
+
+Two := Succ One
+Three := Succ Two
+
+// Pairs (for predecessor)
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+
+Sub := $nk.k Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+// Z combinator (applicative order)
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+// Mod via repeated subtraction:
+// mod(n,d) = if n < d then n else mod(n-d, d)
+PseudoMod := $fnd.Leq n (Pred d) ($x.n) ($x.f (Sub n d) d) Idiot
+Mod := Z PseudoMod
+
+// Trial division primality:
+// primeCheck(n,d) = if n <= d then True else if mod(n,d)==0 then False else primeCheck(n,d+1)
+PseudoPrimeCheck := $fnd.Leq n d ($x.True) ($x.(IsZero (Mod n d)) ($y.False) ($y.f n (Succ d)) Idiot) Idiot
+PrimeCheck := Z PseudoPrimeCheck
+
+IsPrime := $n.Leq n One ($x.False) ($x.PrimeCheck n Two) Idiot
+
+// NextPrime(n) returns the smallest prime greater than n.
+PseudoNextPrime := $fn.IsPrime (Succ n) ($x.Succ n) ($x.f (Succ n)) Idiot
+NextPrime := Z PseudoNextPrime
+
+// NthPrime(n) = n applications of NextPrime to One.
+NthPrime := $n.n NextPrime One
+
+@first primes
+Prime1 := NthPrime One
+Prime2 := NthPrime Two
+Prime3 := NthPrime Count
+
+#Prime1
+#Prime2
+#Prime3
