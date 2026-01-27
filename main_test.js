@@ -704,6 +704,52 @@ Deno.test("Z combinator enables recursion - SumRange(1,4) = 10", () => {
     assertEquals(toNumber(SumRange(One)(Four)), 10);
 });
 
+Deno.test("IsPrime identifies primes and non-primes", () => {
+    const Idiot = (a) => a;
+    const Kestrel = (a) => (b) => a;
+    const Kite = (a) => (b) => b;
+    const True = Kestrel;
+    const False = Kite;
+
+    const Zero = (f) => (a) => a;
+    const One = (f) => (a) => f(a);
+    const Succ = (n) => (f) => (a) => f(n(f)(a));
+    const Two = Succ(One);
+    const Three = Succ(Two);
+    const Four = Succ(Three);
+    const Five = Succ(Four);
+    const Six = Succ(Five);
+
+    const Vireo = (a) => (b) => (f) => f(a)(b);
+    const Second = (p) => p(Kite);
+    const Phi = (p) => Vireo(Second(p))(Succ(Second(p)));
+    const Pred = (n) => n(Phi)(Vireo(Zero)(Zero))(True);
+    const Sub = (n) => (k) => k(Pred)(n);
+    const IsZero = (n) => n((_x) => False)(True);
+    const Leq = (n) => (m) => IsZero(Sub(n)(m));
+
+    const Z = (f) => ((x) => f((y) => x(x)(y)))((x) => f((y) => x(x)(y)));
+    const PseudoMod = (f) => (n) => (d) =>
+        Leq(n)(Pred(d))((_x) => n)((_x) => f(Sub(n)(d))(d))(Idiot);
+    const Mod = Z(PseudoMod);
+    const PseudoPrimeCheck = (f) => (n) => (d) =>
+        Leq(n)(d)((_x) => True)((_x) =>
+            IsZero(Mod(n)(d))((_y) => False)((_y) => f(n)(Succ(d)))(Idiot)
+        )(Idiot);
+    const PrimeCheck = Z(PseudoPrimeCheck);
+    const IsPrime = (n) => Leq(n)(One)((_x) => False)((_x) => PrimeCheck(n)(Two))(Idiot);
+
+    const toBoolean = (church) => church("True")("False");
+
+    assertEquals(toBoolean(IsPrime(Zero)), "False");
+    assertEquals(toBoolean(IsPrime(One)), "False");
+    assertEquals(toBoolean(IsPrime(Two)), "True");
+    assertEquals(toBoolean(IsPrime(Three)), "True");
+    assertEquals(toBoolean(IsPrime(Four)), "False");
+    assertEquals(toBoolean(IsPrime(Five)), "True");
+    assertEquals(toBoolean(IsPrime(Six)), "False");
+});
+
 Deno.test("Full program compiles and includes all helper functions", () => {
     const transpiler = new LambdaTranspiler();
     const program = `
