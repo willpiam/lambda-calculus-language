@@ -23,6 +23,7 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
   - `<Name>`: Must start with an uppercase letter (e.g., `Zero`, `Succ`).
   - `<expression>`: A lambda abstraction or application.
 - Example: `Zero := $fa.a` defines `Zero` as the Church numeral 0.
+- Assignment can only be done at build time. Effectivly the left side just becomes a short hand for the right side
 
 ### Applications
 - Apply functions by juxtaposition (space-separated terms).

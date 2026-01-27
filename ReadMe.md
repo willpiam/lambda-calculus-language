@@ -11,7 +11,7 @@ Update: Grok got stuck on an issue with the Z combinator. It wasn't until Claude
 
 ## Documentation 
 
-See `docs.md` for documentation.
+See [docs.md](./docs.md) for documentation.
 
 ## Operators
 
