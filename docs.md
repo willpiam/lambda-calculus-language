@@ -50,6 +50,14 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
 - Syntax: `!<expression>`
 - Example: `!SumRange` prints the compiled function expression.
 
+### Numeric List Output
+- Use `*` to print a list of Church numerals as numbers.
+- Syntax: `*<list> <count>`
+  - `<list>`: A pair-based list (built with Cons/Nil).
+  - `<count>`: A Church numeral indicating how many elements to print.
+- The operator iterates through the list, printing each element as a number.
+- Example: `*Primes Count` prints `Count` prime numbers from the `Primes` list.
+
 ### Comments
 - Single-line comments start with `//` and extend to the end of the line.
 - Syntax: `// <comment text>`

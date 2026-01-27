@@ -75,18 +75,19 @@ PseudoNth := $fln.IsZero n ($x.Head l) ($x.f (Tail l) (Pred n)) Idiot
 Nth := Z PseudoNth
 
 // ============================================
-// Build and display primes
+// Build primes list dynamically
 // ============================================
 
-// Compute primes and store in list
-Prime1 := NthPrime One
-Prime2 := NthPrime Two
-Prime3 := NthPrime Three
+// BuildPrimesFrom: recursively build list of N primes starting from index s
+// BuildPrimesFrom s n = if n == 0 then Nil else Cons (NthPrime s) (BuildPrimesFrom (s+1) (n-1))
+PseudoBuildPrimes := $fsn.IsZero n ($x.Nil) ($x.Cons (NthPrime s) (f (Succ s) (Pred n))) Idiot
+BuildPrimesFrom := Z PseudoBuildPrimes
 
-// Build list: [Prime1, Prime2, Prime3]
-Primes := Cons Prime1 (Cons Prime2 (Cons Prime3 Nil))
+// Build list of Count primes, starting from the 1st prime
+Primes := BuildPrimesFrom One Count
 
-@iterating over primes list by index
-#Nth Primes Zero
-#Nth Primes One
-#Nth Primes Two
+// ============================================
+// Display primes using numeric list output
+// ============================================
+@first primes (generated in a loop)
+*Primes Count

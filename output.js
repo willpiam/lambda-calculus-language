@@ -1,18 +1,8 @@
-// Compiled on January 18, 2026 from λ calculus
-// prime.lc
-// Determine whether a Church numeral is prime.
-// Uses recursion via the Z combinator (applicative-order fixpoint).
-
-      function toNumber(church) {
-        return church(n => n + 1)(0);
-      }
-    
-
-      function toBoolean(church) {
-        return church("True")("False");
-      }
-    
-console.log("%cis a number prime or not?", "color: blue");
+// Compiled on January 27, 2026 from λ calculus
+// primes_series.lc
+// Compute the first N prime Church numerals and print them.
+// How many primes to compute (start here).
+const Count = (f) => (a) => f(f(f(a)));
 // Identity / booleans
 const Idiot = (a) => a;
 const Kestrel = (a) => (b) => a;
@@ -26,19 +16,6 @@ const One = (f) => (a) => f(a);
 const Succ = (n) => (f) => (a) => f(n(f)(a));
 const Two = Succ(One);
 const Three = Succ(Two);
-const Four = Succ(Three);
-const Five = Succ(Four);
-const Six = Succ(Five);
-const Seven = Succ(Six);
-const Eight = Succ(Seven);
-const Nine = Succ(Eight);
-const Ten = Succ(Nine);
-const Eleven = Succ(Ten);
-const Mult = (f) => (g) => (a) => f(g(a));
-const OneHundred = Mult(Ten)(Ten);
-console.log(toNumber(OneHundred));
-const OneHundredOne = Succ(OneHundred);
-console.log(toNumber(OneHundredOne));
 // Pairs (for predecessor)
 const Vireo = (a) => (b) => (f) => f(a)(b);
 const First = (p) => p(Kestrel);
@@ -59,32 +36,56 @@ const Mod = Z(PseudoMod);
 const PseudoPrimeCheck = (f) => (n) => (d) => Leq(n)(d)(((x) => True))(((x) => IsZero(Mod(n)(d))(((y) => False))(((y) => f(n)(Succ(d))))(Idiot)))(Idiot);
 const PrimeCheck = Z(PseudoPrimeCheck);
 const IsPrime = (n) => Leq(n)(One)(((x) => False))(((x) => PrimeCheck(n)(Two)))(Idiot);
-console.log("%ctests (True means prime)", "color: blue");
-console.log(toNumber(Zero));
-console.log(toBoolean(IsPrime(Zero)));
-console.log(toNumber(One));
-console.log(toBoolean(IsPrime(One)));
-console.log(toNumber(Two));
-console.log(toBoolean(IsPrime(Two)));
-console.log(toNumber(Three));
-console.log(toBoolean(IsPrime(Three)));
-console.log(toNumber(Four));
-console.log(toBoolean(IsPrime(Four)));
-console.log(toNumber(Five));
-console.log(toBoolean(IsPrime(Five)));
-console.log(toNumber(Six));
-console.log(toBoolean(IsPrime(Six)));
-console.log(toNumber(Seven));
-console.log(toBoolean(IsPrime(Seven)));
-console.log(toNumber(Eight));
-console.log(toBoolean(IsPrime(Eight)));
-console.log(toNumber(Nine));
-console.log(toBoolean(IsPrime(Nine)));
-console.log(toNumber(Ten));
-console.log(toBoolean(IsPrime(Ten)));
-console.log(toNumber(Eleven));
-console.log(toBoolean(IsPrime(Eleven)));
-console.log(toNumber(OneHundred));
-console.log(toBoolean(IsPrime(OneHundred)));
-console.log(toNumber(OneHundredOne));
-console.log(toBoolean(IsPrime(OneHundredOne)));
+// NextPrime(n) returns the smallest prime greater than n.
+const PseudoNextPrime = (f) => (n) => IsPrime(Succ(n))(((x) => Succ(n)))(((x) => f(Succ(n))))(Idiot);
+const NextPrime = Z(PseudoNextPrime);
+// NthPrime(n) = n applications of NextPrime to One.
+const NthPrime = (n) => n(NextPrime)(One);
+// ============================================
+// List structure using chained pairs (Cons/Nil)
+// ============================================
+// Cons creates a pair: (head, tail)
+// Nil is the empty list marker
+const Cons = Vireo;
+const Head = First;
+const Tail = Second;
+const Nil = False;
+// Nth: get element at index n (0-indexed)
+// Nth list 0 = Head list
+// Nth list n = Nth (Tail list) (n-1)
+// Uses thunks ($x.expr) for lazy evaluation in applicative-order JS
+const PseudoNth = (f) => (l) => (n) => IsZero(n)(((x) => Head(l)))(((x) => f(Tail(l))(Pred(n))))(Idiot);
+const Nth = Z(PseudoNth);
+// ============================================
+// Build primes list dynamically
+// ============================================
+// BuildPrimesFrom: recursively build list of N primes starting from index s
+// BuildPrimesFrom s n = if n == 0 then Nil else Cons (NthPrime s) (BuildPrimesFrom (s+1) (n-1))
+const PseudoBuildPrimes = (f) => (s) => (n) => IsZero(n)(((x) => Nil))(((x) => Cons(NthPrime(s))(f(Succ(s))(Pred(n)))))(Idiot);
+const BuildPrimesFrom = Z(PseudoBuildPrimes);
+// Build list of Count primes, starting from the 1st prime
+const Primes = BuildPrimesFrom(One)(Count);
+// ============================================
+// Display primes using numeric list output
+// ============================================
+
+      function toNumber(church) {
+        return church(n => n + 1)(0);
+      }
+    
+
+      function toBoolean(church) {
+        return church("True")("False");
+      }
+    
+console.log("%cfirst primes (generated in a loop)", "color: blue");
+(function(list, len) {
+  const _first = (p) => p((a) => (b) => a);
+  const _second = (p) => p((a) => (b) => b);
+  const n = toNumber(len);
+  let current = list;
+  for (let i = 0; i < n; i++) {
+    console.log(toNumber(_first(current)));
+    current = _second(current);
+  }
+})(Primes, Count);
