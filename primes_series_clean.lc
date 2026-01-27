@@ -1,0 +1,56 @@
+Idiot := $a.a
+True := $ab.a
+False := $ab.b
+
+Not := $p.p False True
+
+Zero := $fa.a
+One := $fa.f a
+
+Succ := $nfa.f (n f a)
+
+Two := Succ One
+Three := Succ Two
+
+Mult :=  $fga.f (g a)
+Six := Mult Two Three
+Seven := Succ Six
+
+Count := Seven 
+
+Vireo := $abf.f a b
+Head := $p.p True
+Tail := $p.p False
+
+Phi := $p.Vireo (Tail p) (Succ (Tail p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+
+Sub := $nk.k Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+PseudoMod := $fnd.Leq n (Pred d) ($x.n) ($x.f (Sub n d) d) Idiot
+Mod := Z PseudoMod
+
+PseudoPrimeCheck := $fnd.Leq n d ($x.True) ($x.(IsZero (Mod n d)) ($y.False) ($y.f n (Succ d)) Idiot) Idiot
+PrimeCheck := Z PseudoPrimeCheck
+
+IsPrime := $n.Leq n One ($x.False) ($x.PrimeCheck n Two) Idiot
+
+PseudoNextPrime := $fn.IsPrime (Succ n) ($x.Succ n) ($x.f (Succ n)) Idiot
+NextPrime := Z PseudoNextPrime
+
+NthPrime := $n.n NextPrime One
+
+PseudoNth := $fln.IsZero n ($x.Head l) ($x.f (Tail l) (Pred n)) Idiot
+Nth := Z PseudoNth
+
+PseudoBuildPrimes := $fsn.IsZero n ($x.False) ($x.Vireo (NthPrime s) (f (Succ s) (Pred n))) Idiot
+BuildPrimesFrom := Z PseudoBuildPrimes
+
+Primes := BuildPrimesFrom One Count
+
+@first N primes (generated in a loop)
+*Primes
