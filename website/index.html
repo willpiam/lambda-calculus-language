@@ -11,6 +11,14 @@
     <h1>Lambda Calculus Runner</h1>
     <p class="subtle">Type a program, run it, load a <code>.lc</code> file, or download your work.</p>
 
+    <div class="controls">
+      <label class="inline-label" for="preset-select">Preset</label>
+      <select id="preset-select" aria-label="Program presets">
+        <option value="">Loading presets...</option>
+      </select>
+      <button id="load-preset-btn" type="button">Load Preset</button>
+    </div>
+
     <label for="program">Program</label>
     <textarea id="program" spellcheck="false" aria-label="Lambda calculus program"></textarea>
 

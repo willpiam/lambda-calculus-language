@@ -1,0 +1,22 @@
+{
+  "presets": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "Minimal identity + one",
+      "file": "presets/starter.lc"
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers Demo",
+      "description": "Church numerals and arithmetic",
+      "file": "presets/numbers.lc"
+    },
+    {
+      "id": "primes",
+      "name": "Prime Series",
+      "description": "Generate first primes",
+      "file": "presets/primes_series.lc"
+    }
+  ]
+}

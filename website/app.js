@@ -340,6 +340,8 @@ const runButton = document.getElementById("run-btn");
 const downloadButton = document.getElementById("download-btn");
 const fileInput = document.getElementById("file-input");
 const output = document.getElementById("output");
+const presetSelect = document.getElementById("preset-select");
+const loadPresetButton = document.getElementById("load-preset-btn");
 
 const starterProgram = `// minimal starter program
 Idiot := $a.a
@@ -350,6 +352,9 @@ One := $fa.f a
 `;
 
 programArea.value = starterProgram;
+let presets = [];
+
+void initPresets();
 
 runButton.addEventListener("click", async () => {
   const source = programArea.value;
@@ -434,6 +439,33 @@ fileInput.addEventListener("change", async (event) => {
   }
 });
 
+loadPresetButton.addEventListener("click", async () => {
+  if (!presetSelect.value) {
+    output.value = "Choose a preset first.";
+    return;
+  }
+
+  const selectedPreset = presets.find((preset) => preset.id === presetSelect.value);
+  if (!selectedPreset) {
+    output.value = "Could not find selected preset.";
+    return;
+  }
+
+  output.value = "loading preset...";
+
+  try {
+    const response = await fetch(selectedPreset.file);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const source = await response.text();
+    programArea.value = source;
+    output.value = `Loaded preset: ${selectedPreset.name}`;
+  } catch (error) {
+    output.value = `Failed to load preset: ${error.message}`;
+  }
+});
+
 function formatLogValue(value) {
   if (typeof value === "string") {
     return value;
@@ -452,4 +484,75 @@ function waitForPaint() {
   return new Promise((resolve) => {
     requestAnimationFrame(() => resolve());
   });
+}
+
+async function initPresets() {
+  try {
+    const response = await fetch("presets.json");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data.presets)) {
+      throw new Error("Invalid presets format");
+    }
+
+    presets = data.presets.filter((preset) => isValidPreset(preset));
+
+    if (presets.length === 0) {
+      setPresetOptions([]);
+      output.value = "No presets found in presets.json.";
+      return;
+    }
+
+    setPresetOptions(presets);
+    output.value = "Presets ready.";
+  } catch (error) {
+    setPresetOptions([]);
+    output.value = `Preset loading disabled: ${error.message}`;
+  }
+}
+
+function setPresetOptions(items) {
+  presetSelect.innerHTML = "";
+
+  if (items.length === 0) {
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "No presets available";
+    presetSelect.appendChild(emptyOption);
+    presetSelect.disabled = true;
+    loadPresetButton.disabled = true;
+    return;
+  }
+
+  const promptOption = document.createElement("option");
+  promptOption.value = "";
+  promptOption.textContent = "Select a preset";
+  presetSelect.appendChild(promptOption);
+
+  for (const preset of items) {
+    const option = document.createElement("option");
+    option.value = preset.id;
+    option.textContent = preset.description
+      ? `${preset.name} - ${preset.description}`
+      : preset.name;
+    presetSelect.appendChild(option);
+  }
+
+  presetSelect.disabled = false;
+  loadPresetButton.disabled = false;
+}
+
+function isValidPreset(value) {
+  return Boolean(
+    value &&
+      typeof value.id === "string" &&
+      value.id.trim() &&
+      typeof value.name === "string" &&
+      value.name.trim() &&
+      typeof value.file === "string" &&
+      value.file.trim(),
+  );
 }

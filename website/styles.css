@@ -57,10 +57,12 @@ textarea {
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: 0.75rem;
+  align-items: center;
 }
 
 button,
-.file-label {
+.file-label,
+select {
   border: 1px solid #cfcfcf;
   border-radius: 6px;
   background: #f9f9f9;
@@ -73,6 +75,10 @@ button,
 button:hover,
 .file-label:hover {
   background: #f2f2f2;
+}
+
+.inline-label {
+  margin: 0;
 }
 
 #file-input {

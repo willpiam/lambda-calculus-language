@@ -1,0 +1,12 @@
+// numbers demo
+Zero := $fa.a
+One := $fa.f a
+Succ := $nfa.f (n f a)
+Two := Succ One
+Three := Succ Two
+
+Add := $nk.n Succ k
+Five := Add Three Two
+
+@show five
+#Five
