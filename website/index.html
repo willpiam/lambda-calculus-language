@@ -9,14 +9,13 @@
 <body>
   <main>
     <h1>Lambda Calculus Runner</h1>
-    <p class="subtle">Type a program, run it, load a <code>.lc</code> file, or download your work.</p>
+    <p class="subtle">Type a program, run it, load a <code>.lc</code> file, or download your work. <a href="https://github.com/willpiam/lambda-calculus-language?tab=readme-ov-file#the-%CE%BB-calculus-language-project" target="_blank" rel="noopener noreferrer">learn more</a></p>
 
     <div class="controls">
       <label class="inline-label" for="preset-select">Preset</label>
       <select id="preset-select" aria-label="Program presets">
         <option value="">Loading presets...</option>
       </select>
-      <button id="load-preset-btn" type="button">Load Preset</button>
     </div>
 
     <label for="program">Program</label>
@@ -31,6 +30,10 @@
 
     <label for="output">Output</label>
     <textarea id="output" aria-live="polite" readonly></textarea>
+
+    <p class="bottom-link">
+      <a href="https://projects.williamdoyle.ca" target="_blank" rel="noopener noreferrer">checkout my other work</a>
+    </p>
   </main>
 
   <script src="app.js"></script>

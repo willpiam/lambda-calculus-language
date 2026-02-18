@@ -1,9 +1,9 @@
 # The λ Calculus Language Project
 
-AI has finally advanced to the point where this project is worth my time. This is the result of my collaboration with Grok 3 and later AI models including Opus 4.5 and GPT-5.2 Codex. 
+A simple programming language based on lambda calculus. The lambda symbol is replaced with a dollar sign for easier typing. Functions can be labeled using the walrus operator.
 
-Update: Grok got stuck on an issue with the Z combinator. It wasn't until Claude Opus 4.5 that the AI was able to overcome this issue in commit 
-[581783a](https://github.com/willpiam/lambda-calculus-language/commit/581783af2029883f87e32c07584e53dc5f7f5a3a)
+Try it in your browser: [Lambda Calculus Runner](https://williamdoyle.ca/lambda-calculus-language/).
+
 
 ## Build and Run a `.lc` program
 

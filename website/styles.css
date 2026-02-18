@@ -81,6 +81,12 @@ button:hover,
   margin: 0;
 }
 
+.file-label {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
 #file-input {
   position: absolute;
   width: 1px;
@@ -93,4 +99,10 @@ button:hover,
   min-height: 160px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.bottom-link {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: #555;
 }

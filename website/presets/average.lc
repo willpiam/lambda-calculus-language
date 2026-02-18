@@ -1,0 +1,138 @@
+// average.lc
+// Calculate the average of a set of Church numerals.
+// Uses recursion via the Z combinator for division and list operations.
+// William Doyle
+// January 16th 2026
+
+@Calculate the average of numbers
+
+// Identity / booleans
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+
+True := Kestrel
+False := Kite
+
+Not := $p.p False True
+
+// Church numerals
+Zero := $fa.a
+One := $fa.f a
+
+Succ := $nfa.f (n f a)
+
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Twelve := Succ (Succ Ten)
+Fifteen := Succ (Succ (Succ Twelve))
+
+// Pairs (for predecessor and lists)
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+
+// Arithmetic
+Add := $nk.n Succ k
+Sub := $nk.k Pred n
+Mult := $fga.f (g a)
+
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+// Z combinator (applicative order)
+Z := $f. ($x. f ($y. x x y)) ($x. f ($y. x x y))
+
+// Division via repeated subtraction:
+// div(n,d) = if n < d then 0 else 1 + div(n-d, d)
+PseudoDiv := $fnd.Leq n (Pred d) ($x.Zero) ($x.Succ (f (Sub n d) d)) Idiot
+Div := Z PseudoDiv
+
+@Test division: 12 / 3 = 4
+#Div Twelve Three
+
+@Test division: 10 / 2 = 5
+#Div Ten Two
+
+@Test division: 15 / 5 = 3
+#Div Fifteen Five
+
+// Lists using Church encoding (right fold)
+// Nil: empty list - returns the base case
+// Cons: add element to front
+Nil := $cn.n
+Cons := $htcn.c h (t c n)
+
+// Check if list is empty
+IsNil := $l.l ($ht.False) True
+
+// Head and Tail (using pairs)
+Head := $l.l ($ht.h) Zero
+Tail := $l.First (l ($hp.Vireo (Second p) (Cons h (Second p))) (Vireo Nil Nil))
+
+// Sum of a list: fold with Add starting from Zero
+Sum := $l.l Add Zero
+
+// Length of a list: fold counting elements
+Length := $l.l ($x.Succ) Zero
+
+// Average: Sum divided by Length
+Average := $l.Div (Sum l) (Length l)
+
+@Build a list of numbers: [2, 4, 6]
+List1 := Cons Two (Cons Four (Cons Six Nil))
+
+@Sum of [2, 4, 6] should be 12
+#Sum List1
+
+@Length of [2, 4, 6] should be 3
+#Length List1
+
+@Average of [2, 4, 6] should be 4
+#Average List1
+
+@Build another list: [3, 5, 7] 
+List2 := Cons Three (Cons Five (Cons Seven Nil))
+
+@Sum of [3, 5, 7] should be 15
+#Sum List2
+
+@Length of [3, 5, 7] should be 3
+#Length List2
+
+@Average of [3, 5, 7] should be 5
+#Average List2
+
+@Build a list: [1, 2, 3, 4, 5]
+List3 := Cons One (Cons Two (Cons Three (Cons Four (Cons Five Nil))))
+
+@Sum of [1, 2, 3, 4, 5] should be 15
+#Sum List3
+
+@Length of [1, 2, 3, 4, 5] should be 5
+#Length List3
+
+@Average of [1, 2, 3, 4, 5] should be 3
+#Average List3
+
+@Build a list of equal numbers: [4, 4, 4, 4]
+List4 := Cons Four (Cons Four (Cons Four (Cons Four Nil)))
+
+@Average of [4, 4, 4, 4] should be 4
+#Average List4
+
+@Single element list: [10]
+List5 := Cons Ten Nil
+
+@Average of [10] should be 10
+#Average List5

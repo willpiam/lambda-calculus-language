@@ -341,18 +341,8 @@ const downloadButton = document.getElementById("download-btn");
 const fileInput = document.getElementById("file-input");
 const output = document.getElementById("output");
 const presetSelect = document.getElementById("preset-select");
-const loadPresetButton = document.getElementById("load-preset-btn");
-
-const starterProgram = `// minimal starter program
-Idiot := $a.a
-One := $fa.f a
-
-@show one
-#One
-`;
-
-programArea.value = starterProgram;
 let presets = [];
+const DEFAULT_PRESET_ID = "prime-check";
 
 void initPresets();
 
@@ -439,9 +429,9 @@ fileInput.addEventListener("change", async (event) => {
   }
 });
 
-loadPresetButton.addEventListener("click", async () => {
+presetSelect.addEventListener("change", async () => {
   if (!presetSelect.value) {
-    output.value = "Choose a preset first.";
+    output.value = "Choose a preset.";
     return;
   }
 
@@ -451,19 +441,7 @@ loadPresetButton.addEventListener("click", async () => {
     return;
   }
 
-  output.value = "loading preset...";
-
-  try {
-    const response = await fetch(selectedPreset.file);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const source = await response.text();
-    programArea.value = source;
-    output.value = `Loaded preset: ${selectedPreset.name}`;
-  } catch (error) {
-    output.value = `Failed to load preset: ${error.message}`;
-  }
+  await loadPreset(selectedPreset);
 });
 
 function formatLogValue(value) {
@@ -507,7 +485,14 @@ async function initPresets() {
     }
 
     setPresetOptions(presets);
-    output.value = "Presets ready.";
+
+    const defaultPreset = presets.find((preset) => preset.id === DEFAULT_PRESET_ID);
+    if (defaultPreset) {
+      presetSelect.value = defaultPreset.id;
+      await loadPreset(defaultPreset);
+    } else {
+      output.value = "Presets ready.";
+    }
   } catch (error) {
     setPresetOptions([]);
     output.value = `Preset loading disabled: ${error.message}`;
@@ -523,7 +508,6 @@ function setPresetOptions(items) {
     emptyOption.textContent = "No presets available";
     presetSelect.appendChild(emptyOption);
     presetSelect.disabled = true;
-    loadPresetButton.disabled = true;
     return;
   }
 
@@ -542,7 +526,6 @@ function setPresetOptions(items) {
   }
 
   presetSelect.disabled = false;
-  loadPresetButton.disabled = false;
 }
 
 function isValidPreset(value) {
@@ -555,4 +538,20 @@ function isValidPreset(value) {
       typeof value.file === "string" &&
       value.file.trim(),
   );
+}
+
+async function loadPreset(preset) {
+  output.value = "loading preset...";
+
+  try {
+    const response = await fetch(preset.file);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const source = await response.text();
+    programArea.value = source;
+    output.value = `Loaded preset: ${preset.name}`;
+  } catch (error) {
+    output.value = `Failed to load preset: ${error.message}`;
+  }
 }

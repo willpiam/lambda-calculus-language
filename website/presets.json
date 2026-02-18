@@ -17,6 +17,18 @@
       "name": "Prime Series",
       "description": "Generate first primes",
       "file": "presets/primes_series.lc"
+    },
+    {
+      "id": "prime-check",
+      "name": "Prime Check",
+      "description": "Check if numbers are prime",
+      "file": "presets/prime.lc"
+    },
+    {
+      "id": "average",
+      "name": "Average",
+      "description": "Calculate average of Church numeral lists",
+      "file": "presets/average.lc"
     }
   ]
 }
