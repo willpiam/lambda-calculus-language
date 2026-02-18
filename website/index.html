@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lambda Calculus Runner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Lambda Calculus Runner</h1>
+    <p class="subtle">Type a program, run it, load a <code>.lc</code> file, or download your work.</p>
+
+    <label for="program">Program</label>
+    <textarea id="program" spellcheck="false" aria-label="Lambda calculus program"></textarea>
+
+    <div class="controls">
+      <button id="run-btn" type="button">Run</button>
+      <button id="download-btn" type="button">Download .lc</button>
+      <label class="file-label" for="file-input">Load .lc</label>
+      <input id="file-input" type="file" accept=".lc,text/plain" />
+    </div>
+
+    <label for="output">Output</label>
+    <textarea id="output" aria-live="polite" readonly></textarea>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
