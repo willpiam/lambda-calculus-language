@@ -47,9 +47,83 @@ textarea,
   background: #fff;
 }
 
-textarea {
-  min-height: 320px;
-  resize: vertical;
+#output {
+  min-height: 160px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#program {
+  height: 320px;
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#program:focus-within {
+  border-color: #111;
+}
+
+#program .cm-editor {
+  height: 100%;
+  background: #fff;
+}
+
+#program .cm-editor.cm-focused {
+  outline: none;
+}
+
+#program .cm-scroller,
+#program .cm-content,
+#program .cm-gutters {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+#program .tok-comment {
+  color: #6b7280;
+  font-style: italic;
+}
+
+#program .tok-text {
+  color: #0369a1;
+}
+
+#program .tok-directive {
+  color: #7c3aed;
+}
+
+#program .tok-defName {
+  color: #111;
+  font-weight: 700;
+}
+
+#program .tok-define,
+#program .tok-lambda,
+#program .tok-dot {
+  color: #9a3412;
+}
+
+#program .tok-param {
+  color: #0f766e;
+}
+
+#program .tok-variable {
+  color: #3f6212;
+}
+
+#program .tok-name {
+  color: #1e3a8a;
+}
+
+#program .tok-paren {
+  color: #78716c;
+}
+
+#program .tok-invalid {
+  color: #b91c1c;
 }
 
 .controls {
@@ -93,12 +167,6 @@ button:hover,
   height: 1px;
   opacity: 0;
   pointer-events: none;
-}
-
-#output {
-  min-height: 160px;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 .bottom-link {

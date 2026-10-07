@@ -151,6 +151,15 @@ Deno.test("@ directive creates colored console.log", () => {
     assertEquals(result.includes('console.log("%chello world", "color: blue");'), true);
 });
 
+Deno.test("@ directive escapes quotes in text output", () => {
+    const transpiler = new LambdaTranspiler();
+    const result = transpiler.transpile('@say "hi"');
+    assertEquals(
+        result.includes('console.log("%csay \\"hi\\"", "color: blue");'),
+        true,
+    );
+});
+
 Deno.test("! directive creates toString console.log", () => {
     const transpiler = new LambdaTranspiler();
     const program = `
