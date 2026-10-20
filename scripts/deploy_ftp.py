@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
-"""Upload website/ to the site over plain FTP. Credentials from .env."""
+"""Upload website/ to the site over plain FTP. Credentials from .env.
+
+FTP has no rsync-style delta: a changed file is sent in full. It can report
+size (MLSD or SIZE) but not a content hash. This script skips a file when the
+remote size matches and the local SHA-256 matches the last upload recorded in
+.deploy-ftp-state.json. Until that record exists, a same-size file is
+downloaded once and hashed. Local and remote modification times are not
+comparable, so they are not used.
+"""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
-import sys
-from ftplib import FTP, error_perm
+from ftplib import FTP, error_perm, error_temp
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "website"
+STATE_PATH = ROOT / ".deploy-ftp-state.json"
 
 # Paths/names never uploaded (dotfiles are also skipped).
 SKIP_NAMES = frozenset({"scripts", "__pycache__", "node_modules", "dist"})
@@ -31,6 +41,74 @@ def env_optional(name: str, default: str = "") -> str:
 
 def skip_name(name: str) -> bool:
     return name in (".", "..") or name.startswith(".") or name in SKIP_NAMES
+
+
+def remote_sha256(ftp: FTP, rel: str) -> str | None:
+    """Hash a remote file via RETR. Used once per path, before a local record exists."""
+    digest = hashlib.sha256()
+    try:
+        ftp.retrbinary(f"RETR {rel}", digest.update)
+    except (error_perm, error_temp, OSError, EOFError):
+        return None
+    return digest.hexdigest()
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def upload_decision(
+    *,
+    present: bool,
+    local_size: int,
+    remote_size: int | None,
+    local_hash: str | None,
+    saved_hash: str | None,
+    force: bool,
+) -> bool:
+    """True when STOR should replace the remote file.
+
+    Missing files, unknown sizes, size mismatches, and missing hashes upload.
+    A matching size and hash skips. The caller passes the hash from the last
+    upload, or from a one-time download when no record exists yet.
+    """
+    if force or not present:
+        return True
+    if remote_size is None or remote_size != local_size:
+        return True
+    if saved_hash is None or local_hash is None:
+        return True
+    return local_hash != saved_hash
+
+
+def load_state(path: Path, host: str, remote_dir: str) -> dict[str, str]:
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    if data.get("host") != host or data.get("remote") != remote_dir:
+        return {}
+    files = data.get("files")
+    if not isinstance(files, dict):
+        return {}
+    return {
+        key: value
+        for key, value in files.items()
+        if isinstance(key, str) and isinstance(value, str)
+    }
+
+
+def save_state(path: Path, host: str, remote_dir: str, files: dict[str, str]) -> None:
+    payload = {"host": host, "remote": remote_dir, "files": files}
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def local_tree(root: Path) -> tuple[set[str], set[str]]:
@@ -54,14 +132,38 @@ def local_tree(root: Path) -> tuple[set[str], set[str]]:
     return files, dirs
 
 
-def ftp_list(ftp: FTP, rel_dir: str) -> list[tuple[str, bool]]:
+def ftp_size(ftp: FTP, rel: str) -> int | None:
+    try:
+        return ftp.size(rel)
+    except (error_perm, error_temp, OSError, ValueError):
+        return None
+
+
+def listing_size(facts: dict[str, str]) -> int | None:
+    raw = facts.get("size")
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
+def ftp_list(ftp: FTP, rel_dir: str) -> list[tuple[str, bool, int | None]]:
     path = rel_dir or "."
     try:
-        entries: list[tuple[str, bool]] = []
+        entries: list[tuple[str, bool, int | None]] = []
         for name, facts in ftp.mlsd(path):
             if skip_name(name):
                 continue
-            entries.append((name, facts.get("type") == "dir"))
+            is_dir = facts.get("type") == "dir"
+            size: int | None = None
+            if not is_dir:
+                size = listing_size(facts)
+                if size is None:
+                    child = f"{rel_dir}/{name}" if rel_dir else name
+                    size = ftp_size(ftp, child)
+            entries.append((name, is_dir, size))
         return entries
     except (error_perm, AttributeError, OSError, ValueError):
         pass
@@ -72,7 +174,7 @@ def ftp_list(ftp: FTP, rel_dir: str) -> list[tuple[str, bool]]:
         return []
 
     cwd = ftp.pwd()
-    result: list[tuple[str, bool]] = []
+    result: list[tuple[str, bool, int | None]] = []
     for raw in raw_names:
         name = raw.rstrip("/").split("/")[-1]
         if skip_name(name):
@@ -81,24 +183,24 @@ def ftp_list(ftp: FTP, rel_dir: str) -> list[tuple[str, bool]]:
         try:
             ftp.cwd(child)
             ftp.cwd(cwd)
-            result.append((name, True))
+            result.append((name, True, None))
         except error_perm:
-            result.append((name, False))
+            result.append((name, False, ftp_size(ftp, child)))
     return result
 
 
-def remote_tree(ftp: FTP) -> tuple[set[str], set[str]]:
-    files: set[str] = set()
+def remote_tree(ftp: FTP) -> tuple[dict[str, int | None], set[str]]:
+    files: dict[str, int | None] = {}
     dirs: set[str] = set()
 
     def walk(rel: str) -> None:
-        for name, is_dir in ftp_list(ftp, rel):
+        for name, is_dir, size in ftp_list(ftp, rel):
             child = f"{rel}/{name}" if rel else name
             if is_dir:
                 dirs.add(child)
                 walk(child)
             else:
-                files.add(child)
+                files[child] = size
 
     walk("")
     return files, dirs
@@ -143,14 +245,18 @@ def prune_remote(
     local_dirs: set[str],
     remote_files: set[str],
     remote_dirs: set[str],
+    dry_run: bool,
 ) -> tuple[int, int]:
     extra_files = sorted(remote_files - local_files)
     extra_dirs = sorted(remote_dirs - local_dirs, key=lambda p: p.count("/"), reverse=True)
     for rel in extra_files:
         print(f"  prune file {rel}")
-        ftp.delete(rel)
+        if not dry_run:
+            ftp.delete(rel)
     for rel in extra_dirs:
         print(f"  prune dir  {rel}")
+        if dry_run:
+            continue
         try:
             ftp.rmd(rel)
         except error_perm as exc:
@@ -171,11 +277,15 @@ def connect(host: str, port: int, user: str, password: str, remote_dir: str) -> 
     ftp.connect(host, port, timeout=30)
     ftp.login(user, password)
     ftp.set_pasv(True)
+    try:
+        ftp.voidcmd("TYPE I")
+    except error_perm:
+        pass
     cwd_remote(ftp, remote_dir)
     return ftp
 
 
-def deploy(dry_run: bool) -> None:
+def deploy(dry_run: bool, force: bool) -> None:
     host = env_required("FTP_HOST")
     port_raw = env_optional("FTP_PORT", "21")
     try:
@@ -191,30 +301,92 @@ def deploy(dry_run: bool) -> None:
     print(f"Local:  {SOURCE} ({len(local_files)} files, {len(local_dirs)} dirs)")
     print(f"Remote: {user}@{host}:{port}{remote_dir}")
 
-    if dry_run:
-        for rel in sorted(local_dirs):
-            print(f"  mkdir {rel}")
-        for rel in sorted(local_files):
-            print(f"  upload {rel}")
-        print("Dry run: would prune remote files/dirs not in local tree (needs a connection).")
-        return
-
     password = env_required("FTP_PASSWORD")
+    saved = {} if force else load_state(STATE_PATH, host, remote_dir)
+    if force:
+        print("Force: uploading every file.")
+    elif not saved:
+        print(
+            "No upload record yet. Same-size files are downloaded once to compare "
+            "contents; later deploys skip that."
+        )
+
     ftp = connect(host, port, user, password, remote_dir)
     try:
-        known_dirs = set()
-        for rel in sorted(local_dirs, key=lambda p: p.count("/")):
-            ensure_remote_dir(ftp, rel, known_dirs)
-            print(f"  mkdir {rel}")
-        for rel in sorted(local_files):
-            print(f"  upload {rel}")
-            upload_file(ftp, SOURCE / rel, rel)
         remote_files, remote_dirs = remote_tree(ftp)
+        known_dirs = set(remote_dirs)
+        for rel in sorted(local_dirs, key=lambda p: p.count("/")):
+            if rel in known_dirs:
+                continue
+            print(f"  mkdir {rel}")
+            if not dry_run:
+                ensure_remote_dir(ftp, rel, known_dirs)
+
+        uploaded = 0
+        skipped = 0
+        new_state: dict[str, str] = {}
+        for rel in sorted(local_files):
+            local = SOURCE / rel
+            local_size = local.stat().st_size
+            present = rel in remote_files
+            remote_size = remote_files.get(rel)
+            saved_hash = saved.get(rel)
+            local_hash: str | None = None
+            compared_hash = saved_hash
+            if (
+                not force
+                and present
+                and remote_size is not None
+                and remote_size == local_size
+            ):
+                local_hash = file_sha256(local)
+                if compared_hash is None:
+                    # No checksum command in FTP. Read the remote file once.
+                    compared_hash = remote_sha256(ftp, rel)
+            if upload_decision(
+                present=present,
+                local_size=local_size,
+                remote_size=remote_size,
+                local_hash=local_hash,
+                saved_hash=compared_hash,
+                force=force,
+            ):
+                print(f"  upload {rel}")
+                if not dry_run:
+                    for attempt in range(4):
+                        try:
+                            upload_file(ftp, local, rel)
+                            break
+                        except (EOFError, OSError, error_temp) as exc:
+                            if attempt == 3:
+                                raise
+                            print(f"    retry {rel} ({exc.__class__.__name__})")
+                            try:
+                                ftp.close()
+                            except OSError:
+                                pass
+                            ftp = connect(host, port, user, password, remote_dir)
+                    new_state[rel] = local_hash or file_sha256(local)
+                uploaded += 1
+            else:
+                print(f"  skip   {rel}")
+                skipped += 1
+                if local_hash is not None:
+                    new_state[rel] = local_hash
+
         n_files, n_dirs = prune_remote(
-            ftp, local_files, local_dirs, remote_files, remote_dirs
+            ftp,
+            local_files,
+            local_dirs,
+            set(remote_files),
+            remote_dirs,
+            dry_run=dry_run,
         )
+        if not dry_run:
+            save_state(STATE_PATH, host, remote_dir, new_state)
+        verb = "Would upload" if dry_run else "Uploaded"
         print(
-            f"Done. Uploaded {len(local_files)} files, "
+            f"Done. {verb} {uploaded} files, skipped {skipped} unchanged, "
             f"pruned {n_files} files and {n_dirs} dirs."
         )
     finally:
@@ -225,19 +397,22 @@ def deploy(dry_run: bool) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Upload website/ files over FTP."
-    )
+    parser = argparse.ArgumentParser(description="Upload website/ files over FTP.")
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print the upload plan without connecting.",
+        help="Connect and print uploads, skips, and prunes without changing the server.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Upload every file, ignoring size and the saved content hashes.",
     )
     args = parser.parse_args()
 
     load_dotenv(ROOT / ".env")
     source_ready()
-    deploy(dry_run=args.dry_run)
+    deploy(dry_run=args.dry_run, force=args.force)
 
 
 if __name__ == "__main__":

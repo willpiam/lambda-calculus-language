@@ -1,0 +1,147 @@
+// pi.lc
+// Decimal digits of pi, in the lambda calculus.
+//
+// Change Decimals to ask for more or fewer digits after the decimal point.
+// Decimals := One    prints 3.1
+// Decimals := Two    prints 3.14
+// Decimals := Four   prints 3.1415
+// Church arithmetic is repeated application, so each extra digit costs
+// more than the last. Two digits returns immediately. Ten digits still
+// finishes in a few seconds.
+//
+// Why this algorithm
+// A power series, or the streaming spigot, keeps one integer that grows
+// like 10^digits or faster. A Church numeral of that size cannot be
+// evaluated. The Rabinowitz-Wagon spigot (1995) keeps a list of counters
+// instead. Each counter is stored modulo 2*i+1, and for the first few
+// dozen digits the carries stay in the hundreds, which Church numerals
+// can still compute.
+//
+// Pseudocode
+//   wanted = decimals + 1          // the leading 3, plus the decimal digits
+//   steps  = wanted + 2            // two extra passes so a trailing 9 is resolved
+//   length = floor(10 * steps / 3) + 1
+//   row    = [2, 2, ..., 2]        // length copies
+//   held   = 0                     // one digit is held back
+//   nines  = 0
+//   out    = []
+//   repeat steps times:
+//     carry = 0
+//     for i from length-1 down to 0:
+//       x        = 10 * row[i] + carry * (i + 1)
+//       row[i]   = x mod (2 * i + 1)
+//       carry    = x div (2 * i + 1)
+//     digit = carry div 10
+//     row[0] = carry mod 10
+//     if digit == 9:
+//       nines = nines + 1
+//     else if digit == 10:         // 9s become 0s and the held digit gains one
+//       out.append(held + 1)
+//       out.append(0) nines times
+//       held, nines = 0, 0
+//     else:
+//       out.append(held)
+//       out.append(9) nines times
+//       held, nines = digit, 0
+//   out.append(held)
+//   drop the first value (it is the starting 0, not a digit of pi)
+//   keep only `wanted` digits
+//   pi = those digits, with a point after the first one
+//
+// The Decimals setting itself is just below the Church numerals.
+
+// Booleans and the applicative-order fixpoint.
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+True := Kestrel
+False := Kite
+And := $pq.p q False
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+
+// Church numerals.
+Zero := $fa.a
+One := $fa.f a
+Succ := $nfa.f (n f a)
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+
+// How many digits after the decimal point. Two prints 3.14.
+Decimals := Two
+
+// Pairs. Nil is `$x.True`, which IsNil accepts and the list printer treats as empty.
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+Cons := Vireo
+Head := First
+Tail := Second
+Nil := $x.True
+IsNil := $l.l ($ht.False)
+
+// Predecessor and arithmetic. DivMod walks down by the divisor and
+// returns the pair (quotient, remainder).
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+Add := $nk.n Succ k
+Sub := $nk.k Pred n
+Mult := $fga.f (g a)
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+Eq := $ab.And (Leq a b) (Leq b a)
+PseudoDivMod := $fnd.Leq n (Pred d) ($x.Vireo Zero n) ($x.($p.Vireo (Succ (First p)) (Second p)) (f (Sub n d) d)) Idiot
+DivMod := Z PseudoDivMod
+Div := $nd.First (DivMod n d)
+
+// Lists.
+PseudoRep := $fnx.IsZero n ($a.Nil) ($a.Cons x (f (Pred n) x)) Idiot
+Replicate := Z PseudoRep
+PseudoRev := $fla.IsNil l ($x.a) ($x.f (Tail l) (Cons (Head l) a)) Idiot
+Reverse := $l.(Z PseudoRev) l Nil
+PseudoTake := $fnl.IsZero n ($x.Nil) ($x.IsNil l ($y.Nil) ($y.Cons (Head l) (f (Pred n) (Tail l))) Idiot) Idiot
+Take := Z PseudoTake
+PseudoPush := $fnda.IsZero n ($x.a) ($x.f (Pred n) d (Cons d a)) Idiot
+PushMany := Z PseudoPush
+
+// How far to run. Two guard passes settle a final digit of 9, which may
+// still be incremented by a carry that has not arrived yet.
+Wanted := Succ Decimals
+Guard := Two
+Steps := Add Wanted Guard
+Length := Succ (Div (Mult Ten Steps) Three)
+
+// One right-to-left pass. The index of the head is the third argument.
+// At index 0 the modulus is 1, so the carry is the whole total and the
+// stored remainder is replaced afterwards by that carry mod 10.
+ScanNil := Vireo Nil Zero
+ScanAtZero := $fl.($r.($x.Vireo (Cons Zero (First r)) x) (Add (Mult Ten (Head l)) (Second r))) (f (Tail l) One)
+ScanAtRest := $fli.($r.($m.Vireo (Cons (Second m) (First r)) (First m)) (DivMod (Add (Mult Ten (Head l)) (Mult (Second r) (Succ i))) (Succ (Mult Two i)))) (f (Tail l) (Succ i))
+PseudoScan := $fli.IsNil l ($x.ScanNil) ($x.IsZero i ($y.ScanAtZero f l) ($y.ScanAtRest f l i) Idiot) Idiot
+Scan := Z PseudoScan
+
+// (new row, next emitted candidate). The candidate is still 0..10, not yet
+// written into the output, because a later 10 can change it.
+OneStep := $a.($s.($q.($m.Vireo (Cons (Second m) (Tail (First s))) (First m)) (DivMod q Ten)) (Second s)) (Scan a Zero)
+
+// Output is built backwards. f is the loop, k counts remaining passes,
+// a is the row, c counts held nines, p is the held digit, s is the reversed output.
+HoldNine := $fkacps.f (Pred k) a (Succ c) p s
+EmitCarry := $fkacps.f (Pred k) a Zero Zero (PushMany c Zero (Cons (Succ p) s))
+EmitDigit := $fkacpsq.f (Pred k) a Zero q (PushMany c Nine (Cons p s))
+Dispatch := $fkacpsq.Eq q Ten ($x.EmitCarry f k a c p s) ($x.Eq q Nine ($y.HoldNine f k a c p s) ($y.EmitDigit f k a c p s q) Idiot) Idiot
+PseudoLoop := $fkacps.IsZero k ($x.Cons p s) ($x.($t.Dispatch f k (First t) c p s (Second t)) (OneStep a)) Idiot
+Loop := Z PseudoLoop
+
+// Drop the initial held 0, then drop the guard digits.
+Hidden := Loop Steps (Replicate Length Two) Zero Zero Nil
+PiDigits := Take Wanted (Tail (Reverse Hidden))
+
+@digits of pi (the first number is the ones place)
+*PiDigits

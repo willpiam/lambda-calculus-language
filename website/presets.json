@@ -29,6 +29,12 @@
       "name": "Average",
       "description": "Calculate average of Church numeral lists",
       "file": "presets/average.lc"
+    },
+    {
+      "id": "pi",
+      "name": "Pi",
+      "description": "Decimal digits of pi",
+      "file": "presets/pi.lc"
     }
   ]
 }
