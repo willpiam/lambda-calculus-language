@@ -1,0 +1,112 @@
+// bubblesort.lc
+// Bubble sort a list of Church numerals, in the lambda calculus.
+//
+// Pick a list in the "Choose a list" section below. Exactly one
+// `List := ...` line should be uncommented.
+//
+// Pseudocode
+//   pass(l):                      // one sweep, the largest value sinks to the end
+//     if l has fewer than 2 items: return l
+//     a, b, rest = l[0], l[1], l[2:]
+//     if a <= b: return [a] + pass([b] + rest)
+//     else:      return [b] + pass([a] + rest)
+//   sort(l):
+//     repeat length(l) times: l = pass(l)
+//
+// The repeat is just the Church numeral length(l) applied to pass, so only
+// a single pass needs the Z combinator.
+
+// Booleans and the applicative-order fixpoint.
+Idiot := $a.a
+Kestrel := $ab.a
+Kite := $ab.b
+True := Kestrel
+False := Kite
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+
+// Church numerals.
+Zero := $fa.a
+One := $fa.f a
+Succ := $nfa.f (n f a)
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Eleven := Succ Ten
+Twelve := Succ Eleven
+Thirteen := Succ Twelve
+Fourteen := Succ Thirteen
+Fifteen := Succ Fourteen
+Sixteen := Succ Fifteen
+Seventeen := Succ Sixteen
+Eighteen := Succ Seventeen
+Nineteen := Succ Eighteen
+Twenty := Succ Nineteen
+
+// Pairs and lists. Nil is `$x.True`, which IsNil accepts and the list printer treats as empty.
+Vireo := $abf.f a b
+First := $p.p Kestrel
+Second := $p.p Kite
+Cons := Vireo
+Head := First
+Tail := Second
+Nil := $x.True
+IsNil := $l.l ($ht.False)
+
+// Comparison. Sub stops at zero, so a - b is zero exactly when a <= b.
+Phi := $p.Vireo (Second p) (Succ (Second p))
+Pred := $n.n Phi (Vireo Zero Zero) True
+Sub := $nk.k Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+
+// Choose a list. Uncomment the one you want and comment out the rest.
+// [5, 3, 8, 1, 9, 2, 7]
+List := Cons Five (Cons Three (Cons Eight (Cons One (Cons Nine (Cons Two (Cons Seven Nil))))))
+
+// [1, 2, 3, 4, 5, 6]
+// List := Cons One (Cons Two (Cons Three (Cons Four (Cons Five (Cons Six Nil)))))
+
+// [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+// List := Cons Nine (Cons Eight (Cons Seven (Cons Six (Cons Five (Cons Four (Cons Three (Cons Two (Cons One (Cons Zero Nil)))))))))
+
+// [4, 2, 4, 1, 2, 4, 1]
+// List := Cons Four (Cons Two (Cons Four (Cons One (Cons Two (Cons Four (Cons One Nil))))))
+
+// [7, 7, 7, 7]
+// List := Cons Seven (Cons Seven (Cons Seven (Cons Seven Nil)))
+
+// [20, 0, 15, 3, 18, 11, 6, 13]
+// List := Cons Twenty (Cons Zero (Cons Fifteen (Cons Three (Cons Eighteen (Cons Eleven (Cons Six (Cons Thirteen Nil)))))))
+
+// [2, 1]
+// List := Cons Two (Cons One Nil)
+
+// [6]
+// List := Cons Six Nil
+
+// []
+// List := Nil
+
+// Length of a list, as a Church numeral.
+PseudoLength := $fl.IsNil l ($x.Zero) ($x.Succ (f (Tail l))) Idiot
+Length := Z PseudoLength
+
+// One bubble pass. a and b are the first two items, r is everything after them.
+// The smaller item stays behind and the larger keeps moving right.
+Bubble := $fabr.Leq a b ($x.Cons a (f (Cons b r))) ($x.Cons b (f (Cons a r))) Idiot
+PseudoPass := $fl.IsNil l ($x.Nil) ($x.IsNil (Tail l) ($y.l) ($y.Bubble f (Head l) (Head (Tail l)) (Tail (Tail l))) Idiot) Idiot
+Pass := Z PseudoPass
+
+// n passes are enough for a list of n items.
+BubbleSort := $l.Length l Pass l
+
+@unsorted
+*List
+@sorted
+*BubbleSort List

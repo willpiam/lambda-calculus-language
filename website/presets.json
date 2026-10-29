@@ -35,6 +35,12 @@
       "name": "Pi",
       "description": "Decimal digits of pi",
       "file": "presets/pi.lc"
+    },
+    {
+      "id": "bubble-sort",
+      "name": "Bubble Sort",
+      "description": "Sort a list of Church numerals",
+      "file": "presets/bubblesort.lc"
     }
   ]
 }
