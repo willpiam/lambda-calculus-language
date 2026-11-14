@@ -20,6 +20,7 @@ const runButton = document.getElementById("run-btn");
 const downloadButton = document.getElementById("download-btn");
 const fileInput = document.getElementById("file-input");
 const output = document.getElementById("output");
+const transpiledOutput = document.getElementById("transpiled-output");
 const presetSelect = document.getElementById("preset-select");
 let presets = [];
 const DEFAULT_PRESET_ID = "prime-check";
@@ -109,6 +110,7 @@ runButton.addEventListener("click", async () => {
   const transpiler = new LambdaTranspiler({ coloredText: false });
   let generated = "";
 
+  transpiledOutput.value = "";
   output.value = "building...";
   await waitForPaint();
 
@@ -119,6 +121,7 @@ runButton.addEventListener("click", async () => {
     return;
   }
 
+  transpiledOutput.value = generated;
   output.value = "running...";
   await waitForPaint();
 
@@ -147,7 +150,6 @@ runButton.addEventListener("click", async () => {
     } else {
       sections.push("\nProgram Output:\n(no output)");
     }
-    sections.push("\nGenerated JavaScript:\n" + generated);
     output.value = sections.join("\n");
   } catch (error) {
     output.value = `Failed while running: ${error.message}`;
