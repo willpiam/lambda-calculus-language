@@ -16,20 +16,35 @@ Welcome to the λ Calculus Language, a simple programming language for expressin
   - `<params>`: A string of lowercase letters (e.g., `fa` for parameters `f` and `a`), each becoming a nested function.
   - `<body>`: The expression, using variables from `<params>` or defined names.
 - Example: `$fa.a` translates to `(f) => (a) => a` in JavaScript.
+- A lambda's body extends as far right as the enclosing parentheses or end of the expression. For example, `$x.$y.x y` means `$x.($y.(x y))`.
+- Variables use lexical scope. Reusing a parameter name in an inner lambda shadows the outer parameter. Free variables stay free; the compiler does not invent bindings for them.
 
 ### Definitions
 - Assign names to expressions with `:=`.
 - Syntax: `<Name> := <expression>`
-  - `<Name>`: Must start with an uppercase letter (e.g., `Zero`, `Succ`).
+  - `<Name>`: Must start with an uppercase letter, followed by letters, digits, or underscores (e.g., `Zero`, `Succ`, `Name_1`).
   - `<expression>`: A lambda abstraction or application.
 - Example: `Zero := $fa.a` defines `Zero` as the Church numeral 0.
-- Assignment can only be done at build time. Effectivly the left side just becomes a short hand for the right side
+- Names refer to earlier definitions and cannot be redefined within the same program. Unknown names are rejected, including inside lambda bodies.
+- A definition labels an expression; it does not introduce an implicit recursive binding. Express recursion using a fixed-point combinator in the source.
 
 ### Applications
-- Apply functions by juxtaposition (space-separated terms).
+- Apply functions by juxtaposition (terms separated by spaces, tabs, or parentheses).
 - Syntax: `<function> <argument>`
 - Parentheses can group applications: `(f a)`.
 - Example: `Succ Two` applies `Succ` to `Two`.
+- Application associates left: `f a b` means `(f a) b`.
+- An inline lambda can be applied directly: `($x.x) One` translates to `((x) => x)(One)`.
+- An unparenthesized lambda used as an argument still consumes its complete body: `Id $fa.f a` means `Id ($fa.f a)`.
+- Each source line is a separate definition, expression, or output directive. Expressions cannot span lines.
+
+### Evaluation
+
+The transpiler translates each variable to a JavaScript identifier, each lambda to a single-argument arrow function, and each application to a single-argument function call. Compact parameter lists expand to nested lambdas. Parentheses preserve the parsed expression's meaning.
+
+Evaluation is eager, following ordinary JavaScript function calls. There are no built-in combinators, name-based special cases, or automatic delays of arguments. For example, the ordinary Y combinator diverges under this evaluation strategy. Recursive programs can express the applicative-order Z combinator and any required thunks explicitly in LC source, as the bundled examples do.
+
+The `#`, `?`, `*`, `@`, and `!` directives provide output and decoding at the boundary; their JavaScript helpers do not change how lambda expressions evaluate. Native literals, JavaScript operators, and property access are not part of the expression language and are rejected.
 
 ### Numeric Output
 - Use `#` to evaluate an expression as a Church numeral and print it as a number.

@@ -1,4 +1,71 @@
 // Shared by the Deno CLI (main.js) and the browser runner (app.js).
+// Expressions have only three forms: variables, lambdas, and applications.
+class ExpressionParser {
+    constructor(tokens) {
+        this.tokens = tokens;
+        this.position = 0;
+    }
+
+    parse() {
+        const expression = this.expression();
+        if (this.position < this.tokens.length) {
+            throw new Error("Unmatched closing parenthesis");
+        }
+        return expression;
+    }
+
+    expression() {
+        if (this.position === this.tokens.length || this.tokens[this.position] === ")") {
+            throw new Error("Empty expression");
+        }
+
+        let result = this.term();
+        while (this.position < this.tokens.length && this.tokens[this.position] !== ")") {
+            result = { type: "application", fn: result, argument: this.term() };
+        }
+        return result;
+    }
+
+    term() {
+        const token = this.tokens[this.position++];
+        if (token === "$") {
+            const params = this.tokens[this.position++];
+            if (!params || !/^[a-z]+$/.test(params)) {
+                throw new Error("No valid parameters in lambda expression");
+            }
+            if (this.tokens[this.position++] !== ".") {
+                throw new Error("Malformed lambda expression: expected '.' after parameters");
+            }
+
+            // A lambda consumes its whole body up to the enclosing ')' or end.
+            let body = this.expression();
+            for (let i = params.length - 1; i >= 0; i--) {
+                body = { type: "lambda", parameter: params[i], body };
+            }
+            return body;
+        }
+
+        if (token === "(") {
+            if (this.position === this.tokens.length) {
+                throw new Error("Unmatched opening parenthesis");
+            }
+            const expression = this.expression();
+            if (this.tokens[this.position++] !== ")") {
+                throw new Error("Unmatched opening parenthesis");
+            }
+            return expression;
+        }
+
+        if (token === ")") {
+            throw new Error("Unmatched closing parenthesis");
+        }
+        if (/^[a-z]$/.test(token) || /^[A-Z][A-Za-z0-9_]*$/.test(token)) {
+            return { type: "variable", name: token };
+        }
+        throw new Error(`Invalid variable or unexpected token '${token}'`);
+    }
+}
+
 export class LambdaTranspiler {
     constructor(options = {}) {
         this.combinations = new Map();
@@ -6,8 +73,10 @@ export class LambdaTranspiler {
     }
 
     transpile(program) {
+        // Each program has its own named definitions, even when this instance is reused.
+        this.combinations.clear();
         const { lines, comments } = this.parseLinesWithComments(program);
-        let output = [];
+        const output = [];
 
         output.push(
             `// Compiled on ${new Date().toLocaleDateString("en-US", {
@@ -27,11 +96,19 @@ export class LambdaTranspiler {
                 !line.startsWith("?") && !line.startsWith("@") && !line.startsWith("!") &&
                 !line.startsWith("*")
             ) {
-                const [name, expr] = line.split(":=").map((s) => s.trim());
+                const assignment = line.indexOf(":=");
+                const name = line.slice(0, assignment).trim();
+                const expr = line.slice(assignment + 2).trim();
                 if (!/^[A-Z]/.test(name)) {
                     throw new Error(
                         `Combination '${name}' must start with a capital letter`,
                     );
+                }
+                if (!/^[A-Z][A-Za-z0-9_]*$/.test(name)) {
+                    throw new Error(`Invalid combination name '${name}'`);
+                }
+                if (this.combinations.has(name)) {
+                    throw new Error(`Combination '${name}' is already defined`);
                 }
                 const transpiledExpr = this.transpileExpression(expr);
                 output.push(`const ${name} = ${transpiledExpr};`);
@@ -83,7 +160,7 @@ export class LambdaTranspiler {
                 !line.startsWith("?") && !line.startsWith("@") && !line.startsWith("!") &&
                 !line.startsWith("*")
             ) {
-                output.push(this.transpileExpression(line));
+                output.push(`${this.transpileExpression(line)};`);
             }
         }
 
@@ -154,88 +231,11 @@ export class LambdaTranspiler {
     }
 
     parseExpression(expr) {
-        if (!expr || typeof expr !== "string") {
-            throw new Error("Invalid expression: expression must be a non-empty string");
-        }
-        expr = expr.trim();
-
-        if (!expr.startsWith("$")) {
-            return this.transpileExpression(expr);
-        }
-
-        const parts = expr.slice(1).split(".");
-        if (parts.length < 2) {
-            throw new Error(`Malformed lambda expression: ${expr}`);
-        }
-
-        let params = [];
-        let bodyIndex = 0;
-        for (let i = 0; i < parts.length - 1; i++) {
-            if (/^[a-z]+$/.test(parts[i])) {
-                params.push(parts[i]);
-                bodyIndex = i + 1;
-            } else {
-                break;
-            }
-        }
-        let body = parts.slice(bodyIndex).join(".").trim();
-
-        if (params.length === 0) {
-            throw new Error(`No valid parameters in lambda expression: ${expr}`);
-        }
-
-        let allParams = [];
-        params.forEach((param) => {
-            if (param.length > 1) {
-                allParams.push(...param.split(""));
-            } else {
-                allParams.push(param);
-            }
-        });
-
-        let result = this.transpileApplication(body);
-        for (let i = allParams.length - 1; i >= 0; i--) {
-            const param = allParams[i];
-            if (!/^[a-z]$/.test(param)) {
-                throw new Error(`Parameter '${param}' must be a single lowercase letter`);
-            }
-            result = `(${param}) => ${result}`;
-        }
-        return result;
+        return this.transpileExpression(expr);
     }
 
     transpileApplication(body) {
-        const tokens = this.tokenize(body);
-        if (tokens.length === 1) {
-            if (tokens[0].startsWith("$")) {
-                return this.parseExpression(tokens[0]);
-            } else if (tokens[0].startsWith("(") && tokens[0].endsWith(")")) {
-                return this.transpileExpression(tokens[0].slice(1, -1).trim());
-            }
-            return tokens[0];
-        }
-
-        let result = "";
-        for (let i = 0; i < tokens.length; i++) {
-            let token = tokens[i];
-            if (token.startsWith("$")) {
-                token = this.parseExpression(token);
-            } else if (token.startsWith("(") && token.endsWith(")")) {
-                token = this.transpileExpression(token.slice(1, -1).trim());
-            }
-
-            // If token is an arrow function expression, wrap in parentheses for correct application
-            if (token.includes("=>") && !/^\(.*\)=>/.test(token.trim())) {
-                token = `(${token})`;
-            }
-
-            if (i === 0) {
-                result = token;
-            } else {
-                result = `${result}(${token})`;
-            }
-        }
-        return result;
+        return this.transpileExpression(body);
     }
 
     transpileExpression(expr) {
@@ -244,88 +244,59 @@ export class LambdaTranspiler {
         }
         expr = expr.trim();
 
-        if (expr.startsWith("$")) {
-            return this.parseExpression(expr);
-        }
-
-        if (expr.startsWith("(") && expr.endsWith(")")) {
-            const innerExpr = expr.slice(1, -1).trim();
-            if (innerExpr.startsWith("$")) {
-                return this.parseExpression(innerExpr);
-            }
-            return this.transpileExpression(innerExpr);
-        }
-
-        const tokens = this.tokenize(expr);
-        if (tokens.length === 0) {
-            throw new Error(`Empty expression: ${expr}`);
-        }
-
-        let result = tokens[0];
-        if (result.startsWith("(") && result.endsWith(")")) {
-            const inner = result.slice(1, -1).trim();
-            result = inner.startsWith("$")
-                ? this.parseExpression(inner)
-                : this.transpileExpression(inner);
-        } else if (result.startsWith("$")) {
-            result = this.parseExpression(result);
-        } else if (!/^[a-z]$/.test(result) && !this.combinations.has(result)) {
-            throw new Error(`Unknown combination or invalid variable '${result}'`);
-        }
-
-        for (let i = 1; i < tokens.length; i++) {
-            let arg = tokens[i];
-            if (arg.startsWith("(") && arg.endsWith(")")) {
-                const innerArg = arg.slice(1, -1).trim();
-                arg = innerArg.startsWith("$")
-                    ? this.parseExpression(innerArg)
-                    : this.transpileExpression(innerArg);
-            } else if (arg.startsWith("$")) {
-                arg = this.parseExpression(arg);
-            } else if (!/^[a-z]$/.test(arg) && !this.combinations.has(arg)) {
-                throw new Error(`Invalid argument '${arg}'`);
-            }
-            result = `${result}(${arg})`;
-        }
-
-        return result;
+        const expression = new ExpressionParser(this.tokenize(expr)).parse();
+        this.validateExpression(expression);
+        return this.emitExpression(expression);
     }
 
     tokenize(expr) {
         const tokens = [];
-        let currentToken = "";
-        let parenDepth = 0;
+        const tokenPattern = /[A-Za-z][A-Za-z0-9_]*|[$.()]/y;
+        for (let i = 0; i < expr.length;) {
+            if (/\s/.test(expr[i])) {
+                i++;
+                continue;
+            }
+            tokenPattern.lastIndex = i;
+            const match = tokenPattern.exec(expr);
+            if (!match) {
+                throw new Error(`Unexpected character '${expr[i]}' at column ${i + 1}`);
+            }
+            tokens.push(match[0]);
+            i = tokenPattern.lastIndex;
+        }
+        return tokens;
+    }
 
-        for (let i = 0; i < expr.length; i++) {
-            const char = expr[i];
-            if (char === "(") {
-                parenDepth++;
-                currentToken += char;
-            } else if (char === ")") {
-                parenDepth--;
-                currentToken += char;
-                if (parenDepth === 0 && currentToken) {
-                    tokens.push(currentToken);
-                    currentToken = "";
-                } else if (parenDepth < 0) {
-                    throw new Error(`Unmatched closing parenthesis in '${expr}'`);
+    validateExpression(expression) {
+        switch (expression.type) {
+            case "variable":
+                if (/^[A-Z]/.test(expression.name) && !this.combinations.has(expression.name)) {
+                    throw new Error(`Unknown combination '${expression.name}'`);
                 }
-            } else if (char === " " && parenDepth === 0) {
-                if (currentToken) {
-                    tokens.push(currentToken);
-                    currentToken = "";
-                }
-            } else {
-                currentToken += char;
+                break;
+            case "lambda":
+                this.validateExpression(expression.body);
+                break;
+            case "application":
+                this.validateExpression(expression.fn);
+                this.validateExpression(expression.argument);
+                break;
+        }
+    }
+
+    emitExpression(expression) {
+        switch (expression.type) {
+            case "variable":
+                return expression.name;
+            case "lambda":
+                return `(${expression.parameter}) => ${this.emitExpression(expression.body)}`;
+            case "application": {
+                const fn = this.emitExpression(expression.fn);
+                const callee = expression.fn.type === "lambda" ? `(${fn})` : fn;
+                return `${callee}(${this.emitExpression(expression.argument)})`;
             }
         }
-        if (currentToken) {
-            tokens.push(currentToken);
-        }
-        if (parenDepth > 0) {
-            throw new Error(`Unmatched opening parenthesis in '${expr}'`);
-        }
-        return tokens.filter(Boolean);
     }
 
     toNumberFunction() {
