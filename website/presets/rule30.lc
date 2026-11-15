@@ -1,0 +1,86 @@
+// Rule 30: a one-dimensional cellular automaton, entirely in lambda calculus.
+// A cell is a Church boolean; a row is a list of cells.
+// The next cell is left XOR (center OR right).
+//
+// Start with a single live cell, with Padding dead cells on either side.
+// Cells outside the fixed-width row are always dead (no wraparound).
+// The output shows the initial row and then 16 simultaneous updates.
+// With Padding = Sixteen, no growth is clipped during those 16 updates.
+
+// Ordinary booleans and the applicative-order fixed-point combinator.
+Id := $x.x
+True := $ab.a
+False := $ab.b
+Not := $p.p False True
+Or := $pq.p True q
+Xor := $pq.p (Not q) q
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+
+// Wolfram order: 111 110 101 100 011 010 001 000 -> 00011110.
+Rule := $lcr.Xor l (Or c r)
+
+// Church numerals: used to build the seed and iterate the row update.
+Zero := $fa.a
+One := $fa.f a
+Succ := $nfa.f (n f a)
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Eleven := Succ Ten
+Twelve := Succ Eleven
+Thirteen := Succ Twelve
+Fourteen := Succ Thirteen
+Fifteen := Succ Fourteen
+Sixteen := Succ Fifteen
+
+// Pair-based lists. Empty-list cases are guarded with explicit LC thunks.
+Cons := $htf.f h t
+Head := $l.l True
+Tail := $l.l False
+Nil := $x.True
+IsNil := $l.l ($ht.False)
+HeadOrFalse := $l.IsNil l ($x.False) ($x.Head l) Id
+
+// Change Padding to adjust the width (two lots of padding plus the live cell).
+Padding := Sixteen
+Pad := $l.Padding (Cons False) l
+Seed := Pad (Cons True (Pad Nil))
+
+// Walk the OLD row, carrying its previous cell as the left neighbor.
+// The center and right neighbors also come from the old row, so updates
+// are simultaneous. At each boundary the missing neighbor is False.
+PseudoWalk := $fls.IsNil s ($x.Nil) ($x.Cons (Rule l (Head s) (HeadOrFalse (Tail s))) (f (Head s) (Tail s))) Id
+Walk := Z PseudoWalk
+Step := Walk False
+
+// Convert booleans to Church 0/1 only for the existing numeric-list output.
+PseudoMap := $fgl.IsNil l ($x.Nil) ($x.Cons (g (Head l)) (f g (Tail l))) Id
+Map := Z PseudoMap
+ToNumeral := $b.b One Zero
+Row := $n.Map ToNumeral (n Step Seed)
+
+@Rule 30: 0 = dead, 1 = live; fixed zero boundaries
+@Initial row, followed by generations 1 through 16
+*Row Zero
+*Row One
+*Row Two
+*Row Three
+*Row Four
+*Row Five
+*Row Six
+*Row Seven
+*Row Eight
+*Row Nine
+*Row Ten
+*Row Eleven
+*Row Twelve
+*Row Thirteen
+*Row Fourteen
+*Row Fifteen
+*Row Sixteen

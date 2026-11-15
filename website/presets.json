@@ -41,6 +41,18 @@
       "name": "Bubble Sort",
       "description": "Sort a list of Church numerals",
       "file": "presets/bubblesort.lc"
+    },
+    {
+      "id": "rule-30",
+      "name": "Rule 30",
+      "description": "Cellular automaton from a single live cell",
+      "file": "presets/rule30.lc"
+    },
+    {
+      "id": "rule-110",
+      "name": "Rule 110",
+      "description": "Cellular automaton from a single live cell",
+      "file": "presets/rule110.lc"
     }
   ]
 }

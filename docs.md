@@ -84,6 +84,16 @@ The `#`, `?`, `*`, `@`, and `!` directives provide output and decoding at the bo
 - Definition names must start with an uppercase letter.
 - Multi-line comments (`/* */`) are not supported—use multiple `//` lines instead.
 
+## Cellular Automaton Presets
+
+Choose **Rule 30** or **Rule 110** in the website's preset menu and press **Run**. Each self-contained LC program starts with a single live cell centered in a row of 33 cells, then prints the initial row and 16 generations as lists of `0` (dead) and `1` (live). Cells beyond either end are always dead; the row does not wrap around. Updates are simultaneous, with every neighborhood read from the previous generation.
+
+The cells are Church booleans and the rows are pair-based lists. The local rule, list traversal, seed construction, and generation iteration all run in LC. Booleans become Church numerals only for the existing `*` output directive. These presets require no changes or special cases in the transpiler or browser runtime.
+
+Change `Padding` to adjust the number of dead cells on each side of the seed. `Row n` computes generation `n`, where `n` is a Church numeral; the final `*Row ...` lines choose which generations to print. The default padding accommodates all 16 updates without clipping growth at the edges.
+
+The same preset files can be run from the repository root with `deno task lc website/presets/rule30.lc` or `deno task lc website/presets/rule110.lc`.
+
 ## Compilation
 
 ### Requirements
