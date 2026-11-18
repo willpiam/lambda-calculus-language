@@ -1,0 +1,58 @@
+// Edit the tens and ones digits below to enter an amount from 1 to 99 cents.
+Zero := $fa.a
+Succ := $nfa.f (n f a)
+One := Succ Zero
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+
+Add := $nm.n Succ m
+Mult := $nmf.n (m f)
+Tens := Nine
+Ones := Nine
+Amount := Add (Mult Tens Ten) Ones
+Quarter := Add (Mult Two Ten) Five
+
+Id := $x.x
+True := $ab.a
+False := $ab.b
+Pair := $abf.f a b
+First := $p.p True
+Second := $p.p False
+PredStep := $p.Pair (Second p) (Succ (Second p))
+Pred := $n.First (n PredStep (Pair Zero Zero))
+Sub := $nm.m Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+
+// Take one coin at a time while it fits. Return (count, remainder).
+TakeCoins := Z ($fdnq.Leq d n ($x.f d (Sub n d) (Succ q)) ($x.Pair q n) Id)
+DivMod := $nd.TakeCoins d n Zero
+
+// Taking larger coins first is optimal for these four denominations.
+// In a minimum solution, the smaller coins cannot add up to a quarter:
+// exchange five pennies, two nickels, three dimes, or two dimes and a nickel.
+Quarters := DivMod Amount Quarter
+Dimes := DivMod (Second Quarters) Ten
+Nickels := DivMod (Second Dimes) Five
+Pennies := Second Nickels
+
+@Amount in cents
+#Amount
+@Quarters (25 cents)
+#First Quarters
+@Dimes (10 cents)
+#First Dimes
+@Nickels (5 cents)
+#First Nickels
+@Pennies (1 cent)
+#Pennies
+@Total coins
+#Add (First Quarters) (Add (First Dimes) (Add (First Nickels) Pennies))

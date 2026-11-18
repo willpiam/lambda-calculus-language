@@ -13,6 +13,12 @@
       "file": "presets/numbers.lc"
     },
     {
+      "id": "coin-change",
+      "name": "Coin Change",
+      "description": "Make change with the fewest coins",
+      "file": "presets/coin-change.lc"
+    },
+    {
       "id": "primes",
       "name": "Prime Series",
       "description": "Generate first primes",
