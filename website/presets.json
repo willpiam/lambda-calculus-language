@@ -37,6 +37,12 @@
       "file": "presets/collatz.lc"
     },
     {
+      "id": "mandelbrot",
+      "name": "Mandelbrot",
+      "description": "Draw the Mandelbrot set as a text grid",
+      "file": "presets/mandelbrot.lc"
+    },
+    {
       "id": "primes",
       "name": "Prime Series",
       "description": "Generate first primes",

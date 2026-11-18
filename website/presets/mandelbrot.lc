@@ -1,0 +1,101 @@
+// Render the recurrence z = z*z + c starting at z = 0 for each sampled c.
+// A point escapes when its squared distance from the origin exceeds 4.
+// # marks points that stayed within bounds for the full iteration budget.
+
+Id := $x.x
+True := $ab.a
+False := $ab.b
+Not := $b.b False True
+Or := $ab.a True b
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+
+Zero := $fx.x
+Succ := $nfx.f (n f x)
+Add := $abfx.a f (b f x)
+Mult := $abf.a (b f)
+One := Succ Zero
+Two := Succ One
+Three := Succ Two
+Four := Mult Two Two
+Five := Succ Four
+Seven := Succ (Add Three Three)
+Eight := Mult Two Four
+Ten := Mult Two Five
+Sixteen := Mult Four Four
+TwentyFour := Mult Three Eight
+ThirtyTwo := Mult Two Sixteen
+
+Pair := $abf.f a b
+First := $p.p True
+Second := $p.p False
+Cons := Pair
+Nil := $x.True
+IsNil := $l.l ($ht.False)
+Counter := $n.n (Cons True) Nil
+DropOne := $l.IsNil l l (Second l)
+Length := Z ($fl.IsNil l ($x.Zero) ($x.Succ (f (Second l))) Id)
+
+// A signed value pairs its sign (True for nonnegative) with its magnitude.
+// Magnitudes count units of 1/Scale. Products round to the nearest unit.
+HalfScale := Sixteen
+Scale := Mult Two HalfScale
+Positive := Pair True
+Negative := Pair False
+SignedZero := Positive Zero
+Negate := $a.Pair (Not (First a)) (Second a)
+SameSign := $ab.(First a) (First b) (Not (First b))
+
+// For opposite signs, cancel matching units and keep the larger sign.
+Remaining := $ab.b DropOne (Counter a)
+SignedLength := $al.Pair (First a) (Length l)
+Cancel := $ab.($r.IsNil r ($x.SignedLength b (Remaining (Second b) (Second a))) ($x.SignedLength a r) Id) (Remaining (Second a) (Second b))
+Plus := $ab.SameSign a b ($x.Pair (First a) (Add (Second a) (Second b))) ($x.Cancel a b) Id
+
+// Count complete groups of Scale units, starting half a group in for rounding.
+Group := Second (Counter Scale)
+HalfGroup := Second (Counter HalfScale)
+AdvanceGroup := $qr.IsNil r ($x.Pair (Succ q) Group) ($x.Pair q (Second r)) Id
+DivideStep := $p.AdvanceGroup (First p) (Second p)
+Rescale := $n.First (n DivideStep (Pair Zero HalfGroup))
+Square := $a.Mult (Second a) (Second a)
+TwiceProduct := $ab.Pair (SameSign a b) (Rescale (Mult Two (Mult (Second a) (Second b))))
+
+// Compare against limit + 1 so points exactly on the escape radius continue.
+AxisLimit := Counter (Succ (Mult Two Scale))
+RadiusLimit := Counter (Succ (Mult Four (Mult Scale Scale)))
+Exceeds := $nl.IsNil (n DropOne l)
+OutsideAxis := $ab.Or (Exceeds (Second a) AxisLimit) (Exceeds (Second b) AxisLimit)
+
+// Reuse the unscaled squares in the escape test and the next real component.
+ComplexAdd := $ab.Pair (Plus (First a) (First b)) (Plus (Second a) (Second b))
+ComplexZero := Pair SignedZero SignedZero
+RealPart := $ab.Plus (Positive (Rescale a)) (Negative (Rescale b))
+ComplexSquare := $zab.Pair (RealPart a b) (TwiceProduct (First z) (Second z))
+NextOrbit := $fkczab.IsNil k ($x.True) ($x.f (Second k) c (ComplexAdd (ComplexSquare z a b) c)) Id
+CheckRadius := $fkczab.Exceeds (Add a b) RadiusLimit ($x.False) ($x.NextOrbit f k c z a b) Id
+Orbit := Z ($fkcz.OutsideAxis (First z) (Second z) ($x.False) ($x.CheckRadius f k c z (Square (First z)) (Square (Second z))) Id)
+
+// Sample real coordinates from -2.25 to 1.25 in steps of 1/16.
+// Sample imaginary coordinates from 1.25 to -1.25 in steps of 1/8.
+// The wider vertical spacing accounts for the taller text characters.
+Iterations := TwentyFour
+Budget := Counter Iterations
+Width := Succ (Mult Seven Eight)
+Height := Succ (Mult Four Five)
+Right := Positive (Add Scale Eight)
+Bottom := Negative (Add Scale Eight)
+RealStep := Negative Two
+ImaginaryStep := Positive Four
+GridStep := $dp.Pair (Plus (First p) d) (Cons (First p) (Second p))
+Coordinates := $nsd.Second (n (GridStep d) (Pair s Nil))
+RealCoordinates := Coordinates Width Right RealStep
+ImaginaryCoordinates := Coordinates Height Bottom ImaginaryStep
+
+Filled := Mult Five Seven
+Blank := ThirtyTwo
+Newline := Ten
+Pixel := $xy.Orbit Budget (Pair x y) ComplexZero Filled Blank
+DrawRow := Z ($flct.IsNil l ($a.Cons Newline t) ($a.Cons (Pixel (First l) c) (f (Second l) c t)) Id)
+Draw := Z ($fl.IsNil l ($a.Nil) ($a.DrawRow RealCoordinates (First l) (f (Second l))) Id)
+
+~Draw ImaginaryCoordinates
