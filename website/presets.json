@@ -31,6 +31,12 @@
       "file": "presets/fibonacci.lc"
     },
     {
+      "id": "collatz",
+      "name": "Collatz",
+      "description": "Follow the Collatz sequence from a positive integer to 1",
+      "file": "presets/collatz.lc"
+    },
+    {
       "id": "primes",
       "name": "Prime Series",
       "description": "Generate first primes",

@@ -1,0 +1,35 @@
+// Set Start to a positive Church numeral.
+Zero := $fa.a
+Succ := $nfa.f (n f a)
+One := Succ Zero
+Two := Succ One
+Three := Succ Two
+Seven := Succ (Succ (Succ (Succ Three)))
+Start := Seven
+
+Id := $x.x
+True := $ab.a
+False := $ab.b
+Not := $b.b False True
+IsZero := $n.n ($x.False) True
+Add := $abfx.a f (b f x)
+Mult := $abf.a (b f)
+
+Pair := $abf.f a b
+First := $p.p True
+Second := $p.p False
+Nil := False
+
+// Dividing by two gives a pair (quotient, is odd).
+// Toggle parity on each count and advance the quotient after every second count.
+HalfStep := $p.($qb.Pair (b (Succ q) q) (Not b)) (First p) (Second p)
+Half := $n.n HalfStep (Pair Zero False)
+TriplePlusOne := $n.Succ (Mult Three n)
+Next := $np.Second p ($x.TriplePlusOne n) ($x.First p) Id
+
+// For positive n, the quotient is zero exactly when n is 1.
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+PathTail := $fnp.IsZero (First p) ($x.Nil) ($x.f (Next n p)) Id
+Collatz := Z ($fn.Pair n (PathTail f n (Half n)))
+
+*Collatz Start
