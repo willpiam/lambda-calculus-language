@@ -91,6 +91,7 @@ Coordinates := $nsd.Second (n (GridStep d) (Pair s Nil))
 RealCoordinates := Coordinates Width Right RealStep
 ImaginaryCoordinates := Coordinates Height Bottom ImaginaryStep
 
+// Unicode code point 35 is "#", used for points inside the set.
 Filled := Mult Five Seven
 Blank := ThirtyTwo
 Newline := Ten
