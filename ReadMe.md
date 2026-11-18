@@ -24,6 +24,6 @@ See [docs.md](./docs.md) for documentation.
 | #      | Show church numeral           |
 | *      | Show list of church numerals  |
 | @      | Show Stub Text                |
+| ~      | Show list of Unicode code points as text |
 | !      | Show function body            |
 | //     | Comments                      |
- 

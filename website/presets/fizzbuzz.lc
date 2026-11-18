@@ -1,0 +1,58 @@
+// FizzBuzz from 1 through Count, inclusive.
+Zero := $fa.a
+Succ := $nfa.f (n f a)
+One := Succ Zero
+Two := Succ One
+Three := Succ Two
+Four := Succ Three
+Five := Succ Four
+Six := Succ Five
+Seven := Succ Six
+Eight := Succ Seven
+Nine := Succ Eight
+Ten := Succ Nine
+Add := $nm.n Succ m
+Mult := $nmf.n (m f)
+Hundred := Mult Ten Ten
+Count := Hundred
+
+Id := $x.x
+True := $ab.a
+False := $ab.b
+Pair := $abf.f a b
+First := $p.p True
+Second := $p.p False
+Nil := False
+PredStep := $p.Pair (Second p) (Succ (Second p))
+Pred := $n.First (n PredStep (Pair Zero Zero))
+Sub := $nm.m Pred n
+IsZero := $n.n ($x.False) True
+Leq := $nm.IsZero (Sub n m)
+Z := $f.($x.f ($y.x x y)) ($x.f ($y.x x y))
+Divide := Z ($fdnq.Leq d n ($x.f d (Sub n d) (Succ q)) ($x.Pair q n) Id)
+DivMod := $nd.Divide d n Zero
+Divisible := $nd.IsZero (Second (DivMod n d))
+
+// Prepend text to a list of Unicode code points.
+DigitZero := Add (Mult Four Ten) Eight
+CapitalF := Mult Seven Ten
+CapitalB := Add (Mult Six Ten) Six
+LowerI := Add Hundred Five
+LowerU := Add Hundred (Add Ten Seven)
+LowerZ := Add Hundred (Add (Mult Two Ten) Two)
+Fizz := $t.Pair CapitalF (Pair LowerI (Pair LowerZ (Pair LowerZ t)))
+Buzz := $t.Pair CapitalB (Pair LowerU (Pair LowerZ (Pair LowerZ t)))
+FizzBuzz := $t.Fizz (Buzz t)
+
+// Convert a numeral to decimal by prepending its digits from right to left.
+PrependDigit := $dt.Pair (Add DigitZero d) t
+ContinueDigits := $fqt.IsZero q ($x.t) ($x.f q t) Id
+PrependDigits := Z ($fnt.($p.ContinueDigits f (First p) (PrependDigit (Second p) t)) (DivMod n Ten))
+
+Token := $n.Divisible n Three (Divisible n Five FizzBuzz Fizz) (Divisible n Five Buzz (PrependDigits n))
+WriteLine := $nt.Token n (Pair Ten t)
+
+// Walk down from Count and prepend each line so the final output runs upward.
+Step := $knt.k (Pred n) (WriteLine n t)
+Lines := Count Step ($nt.t) Count Nil
+~Lines

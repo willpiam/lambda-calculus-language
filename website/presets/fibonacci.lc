@@ -1,0 +1,20 @@
+// Print Count terms, starting at F(0) = 0 and F(1) = 1.
+Zero := $fa.a
+Succ := $nfa.f (n f a)
+One := Succ Zero
+Two := Succ One
+Three := Succ Two
+Five := Succ (Succ Three)
+Mult := $nmf.n (m f)
+Count := Mult Three Five
+
+Add := $nm.n Succ m
+Cons := $htf.f h t
+Nil := $ab.b
+
+// Emit the current term and pass the next pair to the remaining steps.
+Step := $kab.Cons a (k b (Add a b))
+Fibonacci := $n.n Step ($ab.Nil) Zero One
+
+@First Fibonacci terms (starting at F(0))
+*Fibonacci Count

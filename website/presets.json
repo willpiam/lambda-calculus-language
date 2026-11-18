@@ -19,6 +19,18 @@
       "file": "presets/coin-change.lc"
     },
     {
+      "id": "fizzbuzz",
+      "name": "FizzBuzz",
+      "description": "Count from 1 to N with Fizz, Buzz, and FizzBuzz",
+      "file": "presets/fizzbuzz.lc"
+    },
+    {
+      "id": "fibonacci",
+      "name": "Fibonacci",
+      "description": "Generate the first N Fibonacci numbers",
+      "file": "presets/fibonacci.lc"
+    },
+    {
       "id": "primes",
       "name": "Prime Series",
       "description": "Generate first primes",

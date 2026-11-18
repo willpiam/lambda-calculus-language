@@ -94,7 +94,7 @@ export class LambdaTranspiler {
             if (
                 line.includes(":=") && !line.startsWith("#") &&
                 !line.startsWith("?") && !line.startsWith("@") && !line.startsWith("!") &&
-                !line.startsWith("*")
+                !line.startsWith("*") && !line.startsWith("~")
             ) {
                 const assignment = line.indexOf(":=");
                 const name = line.slice(0, assignment).trim();
@@ -134,8 +134,8 @@ export class LambdaTranspiler {
             } else if (line.startsWith("!")) {
                 const expr = line.slice(1).trim();
                 output.push(`console.log((${this.transpileExpression(expr)}).toString());`);
-            } else if (line.startsWith("*")) {
-                // Numeric list output: *<list>
+            } else if (line.startsWith("*") || line.startsWith("~")) {
+                const textOutput = line.startsWith("~");
                 const listExpr = this.transpileExpression(line.slice(1).trim());
                 output.push(
 `(function(list) {
@@ -149,17 +149,13 @@ export class LambdaTranspiler {
   const arr = [];
   let current = list;
   while (!_isNil(current)) {
-    arr.push(toNumber(_first(current)));
+    arr.push(${textOutput ? "String.fromCodePoint(toNumber(_first(current)))" : "toNumber(_first(current))"});
     current = _second(current);
   }
-  console.log(arr);
+  console.log(${textOutput ? 'arr.join("")' : "arr"});
 })(${listExpr});`
                 );
-            } else if (
-                line && !line.includes(":=") && !line.startsWith("#") &&
-                !line.startsWith("?") && !line.startsWith("@") && !line.startsWith("!") &&
-                !line.startsWith("*")
-            ) {
+            } else if (line) {
                 output.push(`${this.transpileExpression(line)};`);
             }
         }

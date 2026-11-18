@@ -163,7 +163,7 @@ function isExpressionBoundary(source, i) {
 }
 
 function isDirective(ch) {
-  return ch === "#" || ch === "?" || ch === "!" || ch === "*" || ch === "@";
+  return ch === "#" || ch === "?" || ch === "!" || ch === "*" || ch === "@" || ch === "~";
 }
 
 function isLineBreak(ch) {

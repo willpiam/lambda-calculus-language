@@ -44,7 +44,7 @@ The transpiler translates each variable to a JavaScript identifier, each lambda 
 
 Evaluation is eager, following ordinary JavaScript function calls. There are no built-in combinators, name-based special cases, or automatic delays of arguments. For example, the ordinary Y combinator diverges under this evaluation strategy. Recursive programs can express the applicative-order Z combinator and any required thunks explicitly in LC source, as the bundled examples do.
 
-The `#`, `?`, `*`, `@`, and `!` directives provide output and decoding at the boundary; their JavaScript helpers do not change how lambda expressions evaluate. Native literals, JavaScript operators, and property access are not part of the expression language and are rejected.
+The `#`, `?`, `*`, `@`, `~`, and `!` directives provide output and decoding at the boundary; their JavaScript helpers do not change how lambda expressions evaluate. Native literals, JavaScript operators, and property access are not part of the expression language and are rejected.
 
 ### Numeric Output
 - Use `#` to evaluate an expression as a Church numeral and print it as a number.
@@ -60,6 +60,7 @@ The `#`, `?`, `*`, `@`, and `!` directives provide output and decoding at the bo
 - Use `@` to print a literal line of text.
 - Syntax: `@<text>`
 - Example: `@tests (True means prime)` outputs that line in blue.
+- Use `~<list>` to print a pair-based list of Church numerals as text. Each numeral encodes one Unicode code point. A list containing 72 and 105 prints `Hi`.
 
 ### Function Output
 - Use `!` to print the JavaScript function body for an expression.
